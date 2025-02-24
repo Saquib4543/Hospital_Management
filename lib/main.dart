@@ -66,11 +66,6 @@ class Manufacturer {
   });
 }
 
-
-
-
-
-
 // Additional Data Models
 enum RequestStatus {
   pending,

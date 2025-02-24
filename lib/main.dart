@@ -48,23 +48,6 @@ class Item {
   });
 }
 
-class Manufacturer {
-  final String id;
-  final String name;
-  final String contact;
-  final String email;
-  final String phone;
-  final String address;
-
-  Manufacturer({
-    required this.id,
-    required this.name,
-    required this.contact,
-    required this.email,
-    required this.phone,
-    required this.address,
-  });
-}
 
 
 
@@ -147,7 +130,7 @@ void _handleLogin(BuildContext context, UserRole role) {
     );
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => EmployeeDashboard(user: user)),
+      MaterialPageRoute(builder: (context) => MedicalDashboard(user: user)),
     );
   }
 }

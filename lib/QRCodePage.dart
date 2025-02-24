@@ -1,51 +1,111 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-class QRScannerPage extends StatelessWidget {
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'dart:async';
+
+class QRScannerPage extends StatefulWidget {
+  const QRScannerPage({Key? key}) : super(key: key);
+
+  @override
+  State<QRScannerPage> createState() => _QRScannerPageState();
+}
+
+class _QRScannerPageState extends State<QRScannerPage> with SingleTickerProviderStateMixin {
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? controller;
+  bool isScanning = false;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onQRViewCreated(QRViewController controller) {
+    this.controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      if (scanData.code != null && isScanning) {
+        isScanning = false; // Prevent multiple alerts
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('QR Code Detected'),
+              content: Text('Data: ${scanData.code}'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Close'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    isScanning = true; // Resume scanning
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("QR Scanner")),
+      appBar: AppBar(
+        title: const Text('QR Scanner'),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.qr_code_scanner,
-              size: 100,
-              color: Colors.blue,
-            ),
-            SizedBox(height: 24),
-            Text(
-              "QR Scanner",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+          children: <Widget>[
+            Expanded(
+              flex: 5,
+              child: Stack(
+                children: [
+                  QRView(
+                    key: qrKey,
+                    onQRViewCreated: _onQRViewCreated,
+                  ),
+                  Center(
+                    child: AnimatedBuilder(
+                      animation: _animation,
+                      builder: (context, child) {
+                        return Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.green.withOpacity(_animation.value),
+                              width: 4,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 16),
-            Text(
-              "Scan QR code to view item details",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            SizedBox(height: 24),
-            ElevatedButton.icon(
-              icon: Icon(Icons.camera_alt),
-              label: Text("Start Scanning"),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+            const Expanded(
+              flex: 1,
+              child: Center(
+                child: Text(
+                  'Align QR code within the frame to scan',
+                  style: TextStyle(fontSize: 16),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
-              onPressed: () {
-                // Implement QR scanning logic
-              },
             ),
           ],
         ),

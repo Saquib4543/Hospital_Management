@@ -25,14 +25,33 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="hospital_inventory_management">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://unpkg.com/@zxing/library@0.19.1"></script>
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>hospital_inventory_management</title>
   <link rel="manifest" href="manifest.json">
+  <title>QR Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    function startQRScanner(videoElementId, onScanSuccess) {
+      const html5QrCode = new Html5Qrcode(videoElementId);
+      const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+        onScanSuccess(decodedText);
+      };
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+      html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+    }
+
+    function stopQRScanner() {
+      if (window.html5QrCode) {
+        window.html5QrCode.stop();
+      }
+    }
+  </script>
 </body>
 </html>

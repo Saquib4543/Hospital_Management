@@ -46,7 +46,7 @@ class MedicalDashboard extends StatelessWidget {
               _buildQuickActions(context),
               _buildActiveRequests(),
               _buildRecentActivities(),
-              _buildCriticalInventory(),
+              // _buildCriticalInventory(),
             ],
           ),
         ),
@@ -55,7 +55,7 @@ class MedicalDashboard extends StatelessWidget {
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => NewMedicalRequestPage(user: user),
+            builder: (context) => MedicalEquipmentSelectionPage(),
           ),
         ),
         backgroundColor: Color(0xFF2E7D32),
@@ -310,7 +310,7 @@ class MedicalDashboard extends StatelessWidget {
                       () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NewMedicalRequestPage(user: user),
+                      builder: (context) => MedicalEquipmentSelectionPage(),
                     ),
                   ),
                   Color(0xFF2E7D32),
@@ -713,101 +713,101 @@ class MedicalDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildCriticalInventory() {
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Critical Inventory Alert",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
-          ),
-          SizedBox(height: 16),
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.red.withOpacity(0.3),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 5,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.warning_amber_rounded,
-                        color: Colors.red,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Low Stock Alert",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                        Text(
-                          "These items need attention",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                _criticalItem("Infusion Pumps", "2 remaining", 20, 2),
-                SizedBox(height: 10),
-                _criticalItem("Pulse Oximeters", "3 remaining", 15, 3),
-                SizedBox(height: 10),
-                _criticalItem("Stethoscopes", "4 remaining", 25, 4),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text("Order Supplies"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF2E7D32),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    minimumSize: Size(double.infinity, 0),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildCriticalInventory() {
+  //   return Padding(
+  //     padding: EdgeInsets.all(16),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Text(
+  //           "Critical Inventory Alert",
+  //           style: TextStyle(
+  //             fontSize: 18,
+  //             fontWeight: FontWeight.bold,
+  //             color: Colors.grey[800],
+  //           ),
+  //         ),
+  //         SizedBox(height: 16),
+  //         Container(
+  //           padding: EdgeInsets.all(16),
+  //           decoration: BoxDecoration(
+  //             color: Colors.white,
+  //             borderRadius: BorderRadius.circular(12),
+  //             border: Border.all(
+  //               color: Colors.red.withOpacity(0.3),
+  //             ),
+  //             boxShadow: [
+  //               BoxShadow(
+  //                 color: Colors.grey.withOpacity(0.1),
+  //                 blurRadius: 5,
+  //                 offset: Offset(0, 2),
+  //               ),
+  //             ],
+  //           ),
+  //           child: Column(
+  //             children: [
+  //               Row(
+  //                 children: [
+  //                   Container(
+  //                     padding: EdgeInsets.all(10),
+  //                     decoration: BoxDecoration(
+  //                       color: Colors.red.withOpacity(0.1),
+  //                       shape: BoxShape.circle,
+  //                     ),
+  //                     child: Icon(
+  //                       Icons.warning_amber_rounded,
+  //                       color: Colors.red,
+  //                     ),
+  //                   ),
+  //                   SizedBox(width: 12),
+  //                   Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: [
+  //                       Text(
+  //                         "Low Stock Alert",
+  //                         style: TextStyle(
+  //                           fontSize: 16,
+  //                           fontWeight: FontWeight.bold,
+  //                           color: Colors.red,
+  //                         ),
+  //                       ),
+  //                       Text(
+  //                         "These items need attention",
+  //                         style: TextStyle(
+  //                           fontSize: 14,
+  //                           color: Colors.grey[600],
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //               SizedBox(height: 16),
+  //               _criticalItem("Infusion Pumps", "2 remaining", 20, 2),
+  //               SizedBox(height: 10),
+  //               _criticalItem("Pulse Oximeters", "3 remaining", 15, 3),
+  //               SizedBox(height: 10),
+  //               _criticalItem("Stethoscopes", "4 remaining", 25, 4),
+  //               SizedBox(height: 16),
+  //               ElevatedButton(
+  //                 onPressed: () {},
+  //                 child: Text("Order Supplies"),
+  //                 style: ElevatedButton.styleFrom(
+  //                   backgroundColor: Color(0xFF2E7D32),
+  //                   shape: RoundedRectangleBorder(
+  //                     borderRadius: BorderRadius.circular(8),
+  //                   ),
+  //                   padding: EdgeInsets.symmetric(vertical: 12),
+  //                   minimumSize: Size(double.infinity, 0),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _criticalItem(String name, String count, int total, int remaining) {
     double percentage = remaining / total;
@@ -1165,350 +1165,775 @@ class MedicalDashboard extends StatelessWidget {
 }
 
 // New Medical Equipment Request Page
-class NewMedicalRequestPage extends StatefulWidget {
-  final User user;
-
-  NewMedicalRequestPage({required this.user});
-
+class MedicalEquipmentSelectionPage extends StatefulWidget {
   @override
-  _NewMedicalRequestPageState createState() => _NewMedicalRequestPageState();
+  _MedicalEquipmentSelectionPageState createState() => _MedicalEquipmentSelectionPageState();
 }
 
-class _NewMedicalRequestPageState extends State<NewMedicalRequestPage> {
+class _MedicalEquipmentSelectionPageState extends State<MedicalEquipmentSelectionPage> {
   final _formKey = GlobalKey<FormState>();
-  String _selectedEquipment = 'Ventilator';
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now().add(Duration(days: 2));
   String _purpose = '';
   String _location = '';
   bool _isUrgent = false;
 
-  List<String> _equipmentList = [
-    'Ventilator',
-    'Infusion Pump',
-    'Patient Monitor',
-    'Portable Ultrasound',
-    'ECG Machine',
-    'Defibrillator',
-    'Pulse Oximeter',
-    'Blood Pressure Monitor',
-    'Surgical Microscope',
-    'Anesthesia Machine',
-  ];
+  // Equipment categories for better organization
+  final Map<String, List<String>> _equipmentCategories = {
+    'Respiratory': ['Ventilator', 'Oxygen Concentrator', 'CPAP Machine'],
+    'Monitoring': ['Patient Monitor', 'ECG Machine', 'Pulse Oximeter', 'Blood Pressure Monitor'],
+    'Diagnostic': ['Portable Ultrasound', 'X-Ray Machine', 'CT Scanner'],
+    'Surgical': ['Surgical Microscope', 'Anesthesia Machine', 'Defibrillator', 'Electrosurgical Unit'],
+    'Infusion': ['Infusion Pump', 'Syringe Pump', 'Feeding Pump'],
+  };
+
+  // Map to track selected equipment (item name -> selected status)
+  Map<String, bool> _selectedEquipment = {};
+
+  // Initialize selected equipment map
+  @override
+  void initState() {
+    super.initState();
+    _equipmentCategories.forEach((category, items) {
+      items.forEach((item) {
+        _selectedEquipment[item] = false;
+      });
+    });
+  }
+
+  // Count of selected items
+  int get _selectedCount => _selectedEquipment.values.where((selected) => selected).length;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Request Medical Equipment"),
-        backgroundColor: Color(0xFF2E7D32),
+        title: Text("Medical Equipment Request", style: TextStyle(fontWeight: FontWeight.w600)),
+        backgroundColor: Color(0xFF0D47A1),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.help_outline),
+            onPressed: () {
+              _showHelpDialog();
+            },
+          )
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF2E7D32), Color(0xFFF5F5F5)],
-            stops: [0.0, 0.1],
+            colors: [Color(0xFF0D47A1), Color(0xFFF5F5F5)],
+            stops: [0.0, 0.15],
           ),
         ),
-        child: SingleChildScrollView(
+        child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              children: [
+                // Progress indicator and summary
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    children: [
+                      _buildProgressIndicator(),
+                      SizedBox(width: 16),
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Equipment Details",
+                            "$_selectedCount equipment selected",
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2E7D32),
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold
                             ),
                           ),
-                          SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: 'Select Equipment',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              prefixIcon: Icon(Icons.medical_services_outlined),
-                            ),
-                            value: _selectedEquipment,
-                            items: _equipmentList.map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _selectedEquipment = newValue!;
-                              });
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please select equipment';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Start Date',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    prefixIcon: Icon(Icons.calendar_today),
-                                  ),
-                                  readOnly: true,
-                                  controller: TextEditingController(
-                                    text: '${_startDate.day}/${_startDate.month}/${_startDate.year}',
-                                  ),
-                                  onTap: () async {
-                                    final DateTime? picked = await showDatePicker(
-                                      context: context,
-                                      initialDate: _startDate,
-                                      firstDate: DateTime.now(),
-                                      lastDate: DateTime.now().add(Duration(days: 30)),
-                                    );
-                                    if (picked != null && picked != _startDate) {
-                                      setState(() {
-                                        _startDate = picked;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                              SizedBox(width: 16),
-                              Expanded(
-                                child: TextFormField(
-                                  decoration: InputDecoration(
-                                    labelText: 'End Date',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    prefixIcon: Icon(Icons.calendar_today),
-                                  ),
-                                  readOnly: true,
-                                  controller: TextEditingController(
-                                    text: '${_endDate.day}/${_endDate.month}/${_endDate.year}',
-                                  ),
-                                  onTap: () async {
-                                    final DateTime? picked = await showDatePicker(
-                                      context: context,
-                                      initialDate: _endDate,
-                                      firstDate: _startDate,
-                                      lastDate: _startDate.add(Duration(days: 30)),
-                                    );
-                                    if (picked != null && picked != _endDate) {
-                                      setState(() {
-                                        _endDate = picked;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
                           Text(
-                            "Usage Information",
+                            _isUrgent ? "Urgent Request" : "Standard Request",
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2E7D32),
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              labelText: 'Location/Room',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              prefixIcon: Icon(Icons.location_on_outlined),
-                            ),
-                            onChanged: (value) {
-                              _location = value;
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter location';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 16),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              labelText: 'Purpose',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              prefixIcon: Icon(Icons.description_outlined),
-                            ),
-                            maxLines: 3,
-                            onChanged: (value) {
-                              _purpose = value;
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter purpose';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 16),
-                          SwitchListTile(
-                            title: Text(
-                              "Urgent Request",
-                              style: TextStyle(fontWeight: FontWeight.w500),
-                            ),
-                            subtitle: Text(
-                              "Mark if needed within 24 hours",
-                              style: TextStyle(fontSize: 12),
-                            ),
-                            value: _isUrgent,
-                            activeColor: Color(0xFF2E7D32),
-                            contentPadding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            onChanged: (bool value) {
-                              setState(() {
-                                _isUrgent = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Availability Status",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2E7D32),
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          Container(
-                            padding: EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.green.withOpacity(0.3),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.check_circle_outline,
-                                  color: Colors.green,
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Equipment Available",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green,
-                                        ),
-                                      ),
-                                      Text(
-                                        "3 units available for your selected dates",
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 12
                             ),
                           ),
                         ],
-                      ),
+                      )
+                    ],
+                  ),
+                ),
+
+                // Main content
+                Expanded(
+                  child: Form(
+                    key: _formKey,
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: 8),
+                        ),
+
+                        // Equipment selection section
+                        SliverToBoxAdapter(
+                          child: _buildSectionHeader("Equipment Selection"),
+                        ),
+
+                        // Equipment categories
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                              String category = _equipmentCategories.keys.elementAt(index);
+                              return _buildEquipmentCategoryCard(category);
+                            },
+                            childCount: _equipmentCategories.length,
+                          ),
+                        ),
+
+                        // Request details section
+                        SliverToBoxAdapter(
+                          child: _buildSectionHeader("Request Details"),
+                        ),
+
+                        SliverToBoxAdapter(
+                          child: _buildRequestDetailsCard(),
+                        ),
+
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: 100), // Bottom padding
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Submit form
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: Text(
-                      "Submit Request",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF2E7D32),
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      minimumSize: Size(double.infinity, 0),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
+        ),
+      ),
+      bottomSheet: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate() && _selectedCount > 0) {
+              _submitRequest();
+            } else if (_selectedCount == 0) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Please select at least one piece of equipment'),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+          child: Text(
+            "Submit Request",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF0D47A1),
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            minimumSize: Size(double.infinity, 0),
+            elevation: 2,
           ),
         ),
       ),
     );
   }
-}
 
+  Widget _buildProgressIndicator() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        CircularProgressIndicator(
+          value: _selectedCount > 0 ? 1.0 : 0.0,
+          backgroundColor: Colors.white.withOpacity(0.3),
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          strokeWidth: 3,
+        ),
+        Text(
+          _selectedCount.toString(),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 4.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF0D47A1),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEquipmentCategoryCard(String category) {
+    List<String> equipmentItems = _equipmentCategories[category]!;
+    // Count selected items in this category
+    int selectedInCategory = equipmentItems
+        .where((item) => _selectedEquipment[item] == true)
+        .length;
+
+    return Card(
+      margin: EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ExpansionTile(
+        title: Row(
+          children: [
+            Icon(
+              _getCategoryIcon(category),
+              color: Color(0xFF0D47A1),
+              size: 22,
+            ),
+            SizedBox(width: 12),
+            Text(
+              category,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+        subtitle: Text(
+          "$selectedInCategory of ${equipmentItems.length} selected",
+          style: TextStyle(fontSize: 12),
+        ),
+        childrenPadding: EdgeInsets.only(left: 12, right: 12, bottom: 12),
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        initiallyExpanded: selectedInCategory > 0,
+        children: equipmentItems.map((item) {
+          return _buildEquipmentItem(item);
+        }).toList(),
+      ),
+    );
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Respiratory':
+        return Icons.air;
+      case 'Monitoring':
+        return Icons.monitor_heart;
+      case 'Diagnostic':
+        return Icons.biotech;
+      case 'Surgical':
+        return Icons.medical_services;
+      case 'Infusion':
+        return Icons.water_drop;
+      default:
+        return Icons.medical_information;
+    }
+  }
+
+  Widget _buildEquipmentItem(String equipment) {
+    return CheckboxListTile(
+      title: Text(
+        equipment,
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Color(0xFF0D47A1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              "Available: 3",
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF0D47A1),
+              ),
+            ),
+          ),
+        ],
+      ),
+      value: _selectedEquipment[equipment],
+      activeColor: Color(0xFF0D47A1),
+      contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
+      dense: true,
+      onChanged: (bool? value) {
+        setState(() {
+          _selectedEquipment[equipment] = value ?? false;
+        });
+      },
+    );
+  }
+
+  Widget _buildRequestDetailsCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDateField(
+                    label: 'Start Date',
+                    date: _startDate,
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: _startDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(Duration(days: 30)),
+                        builder: (context, child) {
+                          return Theme(
+                            data: ThemeData.light().copyWith(
+                              colorScheme: ColorScheme.light(
+                                primary: Color(0xFF0D47A1),
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (picked != null && picked != _startDate) {
+                        setState(() {
+                          _startDate = picked;
+                          if (_endDate.isBefore(_startDate)) {
+                            _endDate = _startDate.add(Duration(days: 1));
+                          }
+                        });
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _buildDateField(
+                    label: 'End Date',
+                    date: _endDate,
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: _endDate,
+                        firstDate: _startDate,
+                        lastDate: _startDate.add(Duration(days: 30)),
+                        builder: (context, child) {
+                          return Theme(
+                            data: ThemeData.light().copyWith(
+                              colorScheme: ColorScheme.light(
+                                primary: Color(0xFF0D47A1),
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (picked != null && picked != _endDate) {
+                        setState(() {
+                          _endDate = picked;
+                        });
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            _buildLocationField(),
+            SizedBox(height: 16),
+            _buildPurposeField(),
+            SizedBox(height: 16),
+            _buildUrgentSwitch(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateField({
+    required String label,
+    required DateTime date,
+    required Function() onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: Color(0xFF0D47A1),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  '${date.day}/${date.month}/${date.year}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: 'Location/Room',
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        prefixIcon: Icon(
+          Icons.location_on_outlined,
+          color: Color(0xFF0D47A1),
+        ),
+        hintText: 'e.g., ICU Room 205',
+      ),
+      onChanged: (value) {
+        _location = value;
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter location';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPurposeField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: 'Purpose',
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        prefixIcon: Padding(
+          padding: EdgeInsets.only(bottom: 45),
+          child: Icon(
+            Icons.description_outlined,
+            color: Color(0xFF0D47A1),
+          ),
+        ),
+        hintText: 'Briefly describe purpose of equipment usage',
+        alignLabelWithHint: true,
+      ),
+      maxLines: 3,
+      onChanged: (value) {
+        _purpose = value;
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter purpose';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildUrgentSwitch() {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: _isUrgent ? Colors.red.shade300 : Colors.grey.shade300,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        color: _isUrgent ? Colors.red.shade50 : Colors.transparent,
+      ),
+      child: Row(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Urgent Request",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: _isUrgent ? Colors.red.shade800 : Colors.black87,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                "Mark if needed within 24 hours",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: _isUrgent ? Colors.red.shade700 : Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+          Spacer(),
+          Switch(
+            value: _isUrgent,
+            activeColor: Colors.red.shade700,
+            onChanged: (bool value) {
+              setState(() {
+                _isUrgent = value;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.help_outline, color: Color(0xFF0D47A1)),
+            SizedBox(width: 8),
+            Text("Help & Information"),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHelpItem(
+                icon: Icons.inventory_2,
+                title: "Equipment Selection",
+                description: "Select equipment by category. Each item shows current availability."
+            ),
+            _buildHelpItem(
+                icon: Icons.calendar_today,
+                title: "Request Period",
+                description: "Choose start and end dates for equipment usage."
+            ),
+            _buildHelpItem(
+                icon: Icons.priority_high,
+                title: "Urgent Requests",
+                description: "Mark requests as urgent only if needed within 24 hours."
+            ),
+            _buildHelpItem(
+                icon: Icons.security,
+                title: "Responsibility",
+                description: "You are responsible for the equipment during the requested period."
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("Close"),
+            style: TextButton.styleFrom(
+              foregroundColor: Color(0xFF0D47A1),
+            ),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHelpItem({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: Color(0xFF0D47A1)),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _submitRequest() {
+    // Get list of selected equipment
+    List<String> selectedItems = _selectedEquipment.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+
+    // Get category for each selected item
+    Map<String, List<String>> categorizedItems = {};
+    _equipmentCategories.forEach((category, items) {
+      List<String> selectedInCategory = items
+          .where((item) => _selectedEquipment[item] == true)
+          .toList();
+
+      if (selectedInCategory.isNotEmpty) {
+        categorizedItems[category] = selectedInCategory;
+      }
+    });
+
+    // Show confirmation dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.check_circle, color: Color(0xFF0D47A1)),
+            SizedBox(width: 8),
+            Text("Request Submitted"),
+          ],
+        ),
+        content: Container(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Color(0xFF0D47A1).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Request #MEQ-${DateTime.now().millisecondsSinceEpoch.toString().substring(5, 13)}",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      _isUrgent ? "Priority: Urgent" : "Priority: Standard",
+                      style: TextStyle(
+                        color: _isUrgent ? Colors.red : Colors.green.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      "Duration: ${_startDate.day}/${_startDate.month}/${_startDate.year} - ${_endDate.day}/${_endDate.month}/${_endDate.year}",
+                    ),
+                    Text("Location: $_location"),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Selected Equipment:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              ...categorizedItems.entries.map((entry) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.key,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF0D47A1),
+                      ),
+                    ),
+                    ...entry.value.map((item) => Padding(
+                      padding: const EdgeInsets.only(left: 16, bottom: 4),
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Color(0xFF0D47A1), size: 16),
+                          SizedBox(width: 8),
+                          Text(item),
+                        ],
+                      ),
+                    )),
+                    SizedBox(height: 8),
+                  ],
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Return to previous screen
+            },
+            child: Text("OK"),
+            style: TextButton.styleFrom(
+              foregroundColor: Color(0xFF0D47A1),
+            ),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
+  }
+}
 // Return Medical Equipment Page
 class ReturnMedicalEquipmentPage extends StatefulWidget {
   final User user;

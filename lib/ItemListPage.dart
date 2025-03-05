@@ -127,6 +127,7 @@ class _ItemListPageState extends State<ItemListPage> {
           : items.isEmpty
           ? _buildEmptyView()
           : ListView.builder(
+
         padding: EdgeInsets.all(16),
         itemCount: items.length,
         itemBuilder: (context, index) {

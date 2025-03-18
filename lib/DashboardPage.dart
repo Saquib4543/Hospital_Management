@@ -41,13 +41,15 @@ class _DashboardPageState extends State<DashboardPage> {
     });
 
     try {
-      final response = await http.get(
+      final response = await http
+          .get(
         Uri.parse('https://uat.goclaims.in/inventory_hub/dashboard'),
         headers: {
           'Content-Type': 'application/json',
           // Add any authentication headers if needed
         },
-      ).timeout(Duration(seconds: 10));
+      )
+          .timeout(Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -98,7 +100,11 @@ class _DashboardPageState extends State<DashboardPage> {
                 SizedBox(height: 32),
                 _buildMainGrid(context),
                 SizedBox(height: 32),
+                // 1) Recent Updates
                 _buildRecentUpdates(),
+                SizedBox(height: 32),
+                // 2) Critical Inventory Alert (added below Recent Updates)
+                _buildCriticalInventory(),
               ],
             ),
           ),
@@ -255,8 +261,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final String reservedCount = (_dashboardData['reserved_count'] ?? 0).toString();
     final String totalItems = (_dashboardData['total_items'] ?? 0).toString();
 
-    // Calculate trend percentages (you might want to store previous values to calculate actual trends)
-    // For now using placeholders
+    // Calculate trend percentages (placeholders)
     final availableTrend = "+5.2%";
     final issuedTrend = "+3.1%";
     final reservedTrend = "-2.4%";
@@ -326,7 +331,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Text(
                   trend,
                   style: TextStyle(
-                    color: trend.contains('+') ? Colors.green[700] : Colors.red[700],
+                    color:
+                    trend.contains('+') ? Colors.green[700] : Colors.red[700],
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -416,7 +422,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ItemDetailsPage(itemId: update['item_id']),
+                      builder: (context) =>
+                          ItemDetailsPage(itemId: update['item_id']),
                     ),
                   );
                 },
@@ -496,15 +503,17 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: List.generate(3, (i) => Container(
-                    width: 60,
-                    height: 24,
-                    margin: EdgeInsets.only(left: i > 0 ? 8 : 0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  )),
+                  children: List.generate(3, (i) {
+                    return Container(
+                      width: 60,
+                      height: 24,
+                      margin: EdgeInsets.only(left: i > 0 ? 8 : 0),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    );
+                  }),
                 ),
               );
             },
@@ -723,6 +732,162 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
       ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // NEW METHODS: Critical Inventory Alert and the helper widget _criticalItem()
+  // ---------------------------------------------------------------------------
+  Widget _buildCriticalInventory() {
+    return Padding(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Critical Inventory Alert",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+          SizedBox(height: 16),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.red.withOpacity(0.3),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 5,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.red,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Low Stock Alert",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                        Text(
+                          "These items need attention",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                // Hardcoded examples; replace with real data/API logic as desired
+                _criticalItem("Infusion Pumps", "2 remaining", 20, 2),
+                SizedBox(height: 10),
+                _criticalItem("Pulse Oximeters", "3 remaining", 15, 3),
+                SizedBox(height: 10),
+                _criticalItem("Stethoscopes", "4 remaining", 25, 4),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // TODO: Add your "Order Supplies" logic
+                  },
+                  child: Text("Order Supplies"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF2E7D32),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    minimumSize: Size(double.infinity, 0),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _criticalItem(String name, String count, int total, int remaining) {
+    double percentage = remaining / total;
+
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(
+            name,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Text(
+            count,
+            style: TextStyle(
+              color: Colors.grey[600],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  Container(
+                    height: 6,
+                    width: 100 * percentage,
+                    decoration: BoxDecoration(
+                      color: percentage < 0.3 ? Colors.red : Colors.orange,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

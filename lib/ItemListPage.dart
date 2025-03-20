@@ -609,7 +609,7 @@ import 'ItemDetailsPage.dart';
 import 'AddEditItemPage.dart';
 
 class Item {
-  final String id;
+  final int id;
   final String name;
   final String category;
   final String manufacturer;
@@ -631,7 +631,7 @@ class Item {
 
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
-      id: json['item_id'],
+      id: int.tryParse(json['item_id'].toString()) ?? 0,
       name: json['item_name'],
       category: json['category'],
       manufacturer: json['manufacturer'],
@@ -806,7 +806,7 @@ class _ItemListPageState extends State<ItemListPage> with SingleTickerProviderSt
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ItemDetailsPage(itemId: item.id)),
+                          MaterialPageRoute(builder: (context) => ItemDetailsPage(itemId: item.id.toString())),
                         ).then((_) => _refreshItems());
                       },
                     ),

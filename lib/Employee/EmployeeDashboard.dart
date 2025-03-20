@@ -1,11 +1,14 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:hospital_inventory_management/Employee/Pages/DropDown_Option.dart';
-import 'package:hospital_inventory_management/Employee/MedicalDashboard Functions/RequestEquipmentPage.dart';
-import 'package:hospital_inventory_management/Employee/MedicalDashboard Functions/ReturnEquipmentPage.dart';
-import 'package:hospital_inventory_management/Employee/MedicalDashboard Functions/EquipmentStatusPage.dart';
+import 'package:provider/provider.dart';
 import '../LoginPage.dart';
 import '../main.dart';
+import 'MedicalDashboard Functions/user_provider.dart';
 import 'Pages/Camera_In_Controller.dart';
+import 'Pages/DropDown_Option.dart';
+import 'MedicalDashboard Functions/EquipmentStatusPage.dart';
+import 'MedicalDashboard Functions/RequestEquipmentPage.dart';
+import 'MedicalDashboard Functions/ReturnEquipmentPage.dart';
 
 enum RequestStatus {
   pending,
@@ -17,16 +20,21 @@ enum RequestStatus {
 }
 
 class MedicalDashboard extends StatelessWidget {
-  final User user;
+  final String username;
 
-  const MedicalDashboard({Key? key, required this.user}) : super(key: key);
+  const MedicalDashboard({Key? key, required this.username}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    String? userReferenceId = userProvider.referenceId;
+
     return Scaffold(
+      // If you prefer an AppBar that matches the new gradient's top color:
       appBar: AppBar(
-        title: const Text("MediTrack Pro"),
-        backgroundColor: const Color(0xFF2E7D32),
+        title: const Text("MediTrack Pro",style: TextStyle(color: Colors.white),),
+        // Example: matching the first color in your new gradient
+        backgroundColor: const Color(0xFF3B7AF5),
         elevation: 0,
         actions: [
           IconButton(
@@ -35,63 +43,73 @@ class MedicalDashboard extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.person_outline),
-            onPressed: () => _showProfile(context),
+            onPressed: () => _showProfile(context, userReferenceId),
           ),
         ],
       ),
-      drawer: _buildDrawer(context),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF2E7D32), Color(0xFFF5F5F5)],
-            stops: [0.0, 0.3],
+
+      // Wrap the body in a Stack so we can place a gradient & optional pattern
+      body: Stack(
+        children: [
+          // 1) Gradient background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF3B7AF5), Color(0xFF1E4EC7)],
+              ),
+            ),
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildStaffHeader(),
-              _buildEquipmentSummary(),
-              _buildQuickActions(context),
-              _buildActiveRequests(),
-              _buildRecentActivities(),
-            ],
+
+          // 2) Optional pattern overlay (like in your LoginPage)
+          Opacity(
+            opacity: 0.05,
+            child: CustomPaint(
+              painter: GridPatternPainter(),
+              size: MediaQuery.of(context).size,
+            ),
           ),
-        ),
+
+          // 3) Scrollable content
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // A container or card for the top “Staff Header”
+                _buildStaffHeader(userReferenceId),
+                const SizedBox(height: 8),
+
+                // Summaries + Quick actions, etc. in white cards
+                _buildEquipmentSummary(),
+                _buildQuickActions(context),
+                _buildActiveRequests(),
+                _buildRecentActivities(),
+              ],
+            ),
+          ),
+        ],
       ),
-      // If you still want a floating action button:
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () => Navigator.push(
-      //     context,
-      //     MaterialPageRoute(
-      //       builder: (context) => NewMedicalRequestPage(user: user),
-      //     ),
-      //   ),
-      //   backgroundColor: const Color(0xFF2E7D32),
-      //   child: const Icon(Icons.add_circle_outline),
-      //   tooltip: 'Request New Equipment',
-      // ),
+
+      drawer: _buildDrawer(context, userReferenceId),
     );
   }
 
   // -------------------------------------------------------------
   // Drawer
   // -------------------------------------------------------------
-  Widget _buildDrawer(BuildContext context) {
+  Widget _buildDrawer(BuildContext context, String? referenceId) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // Drawer Header
+          // Header with gradient
           DrawerHeader(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                colors: [Color(0xFF3B7AF5), Color(0xFF1E4EC7)],
               ),
             ),
             child: Column(
@@ -101,17 +119,17 @@ class MedicalDashboard extends StatelessWidget {
                   radius: 36,
                   backgroundColor: Colors.white,
                   child: Text(
-                    user.name[0],
+                    _getFirstName(username)[0], // Extract first letter
                     style: const TextStyle(
                       fontSize: 30,
-                      color: Color(0xFF2E7D32),
+                      color: Color(0xFF3B7AF5),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  user.name,
+                  _getFirstName(username), // Extract first name
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -119,7 +137,14 @@ class MedicalDashboard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  user.department,
+                  username,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  "Employee ID: ${referenceId ?? 'N/A'}", // Show reference ID
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
@@ -141,7 +166,7 @@ class MedicalDashboard extends StatelessWidget {
             title: const Text("Logout"),
             onTap: () {
               Navigator.pop(context);
-              // e.g. Navigator.pushReplacementNamed(context, '/login');
+              // Handle logout logic here
             },
           ),
         ],
@@ -160,25 +185,33 @@ class MedicalDashboard extends StatelessWidget {
   // -------------------------------------------------------------
   // Staff Header
   // -------------------------------------------------------------
-  Widget _buildStaffHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+  Widget _buildStaffHeader(String? referenceId) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.medical_services,
-                color: Colors.white,
-                size: 28,
+              // Icon or avatar
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.medical_services,
+                  color: Colors.white,
+                  size: 28,
+                ),
               ),
               const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Hello, Dr. ${user.name.split(' ')[0]}",
+                    "Hello, ${_getFirstName(username)}",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -187,7 +220,7 @@ class MedicalDashboard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${user.department} • Staff ID: ${user.employeeId}",
+                    "Employee ID: ${referenceId ?? 'N/A'}",
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 14,
@@ -197,7 +230,7 @@ class MedicalDashboard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Text(
             "Monday, February 24, 2025", // or dynamic date
             style: TextStyle(
@@ -214,99 +247,104 @@ class MedicalDashboard extends StatelessWidget {
   // Equipment Summary
   // -------------------------------------------------------------
   Widget _buildEquipmentSummary() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Equipment Summary",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2E7D32),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _summaryItem(
-                "Active",
-                "7",
-                Icons.medical_information,
-                const Color(0xFF2E7D32),
+              const Text(
+                "Equipment Summary",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3B7AF5),
+                ),
               ),
-              _summaryItem(
-                "Reserved",
-                "2",
-                Icons.hourglass_empty,
-                Colors.orange,
-              ),
-              _summaryItem(
-                "Overdue",
-                "1",
-                Icons.warning_amber,
-                Colors.red,
+              const SizedBox(height: 16),
+              // Use Wrap instead of Row to avoid overflow on small screens
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                runSpacing: 16,
+                children: [
+                  _summaryItem(
+                    "Active",
+                    "7",
+                    Icons.medical_information,
+                    const Color(0xFF2E7D32),
+                  ),
+                  _summaryItem(
+                    "Reserved",
+                    "2",
+                    Icons.hourglass_empty,
+                    Colors.orange,
+                  ),
+                  _summaryItem(
+                    "Overdue",
+                    "1",
+                    Icons.warning_amber,
+                    Colors.red,
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _summaryItem(
-      String label, String count, IconData icon, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+      String label,
+      String count,
+      IconData icon,
+      Color color,
+      ) {
+    return SizedBox(
+      width: 100, // fixed width so they can wrap nicely
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 28,
+            ),
           ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 28,
+          const SizedBox(height: 8),
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          count,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   // -------------------------------------------------------------
-  // Quick Actions (includes "Equipments" + "Equipment Status")
+  // Quick Actions (Equipments + Equipment Status)
   // -------------------------------------------------------------
   Widget _buildQuickActions(BuildContext context) {
     return Padding(
@@ -319,49 +357,41 @@ class MedicalDashboard extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: Colors.white70,
             ),
           ),
           const SizedBox(height: 16),
-          Row(
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
             children: [
-              // 1) "Equipments" button (camera scanning flow)
-              Expanded(
-                child: _actionCard(
-                  context,
-                  "Equipments",
-                  Icons.devices,
-                      () {
-                    // Example: open your scanning flow
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => const CameraInController(),
-                      ),
-                    );
-                  },
-                  const Color(0xFF8E24AA),
-                ),
+              _actionCard(
+                context,
+                "Equipments",
+                Icons.devices,
+                    () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => const CameraInController(),
+                    ),
+                  );
+                },
+                const Color(0xFF8E24AA),
               ),
-              const SizedBox(width: 16),
-
-              // 2) "Equipment Status" button
-              Expanded(
-                child: _actionCard(
-                  context,
-                  "Equipment Status",
-                  Icons.report_problem_outlined,
-                      () {
-                    // Navigate to your EquipmentStatusPage
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => EquipmentStatusPage(user: user),
-                      ),
-                    );
-                  },
-                  const Color(0xFFE53935),
-                ),
+              _actionCard(
+                context,
+                "Equipment Status",
+                Icons.report_problem_outlined,
+                    () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => EquipmentStatusPage(userReferenceId: ''),
+                    ),
+                  );
+                },
+                const Color(0xFFE53935),
               ),
             ],
           ),
@@ -380,6 +410,7 @@ class MedicalDashboard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
+        width: MediaQuery.of(context).size.width * 0.4,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -431,7 +462,7 @@ class MedicalDashboard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey,
+                  color: Colors.white70,
                 ),
               ),
               TextButton(
@@ -441,7 +472,7 @@ class MedicalDashboard extends StatelessWidget {
                 child: const Text(
                   "View All",
                   style: TextStyle(
-                    color: Color(0xFF2E7D32),
+                    color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -450,7 +481,6 @@ class MedicalDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Some example items
           _medicalEquipmentCard(
             "Portable Ultrasound",
             "Due: Tomorrow, 9:00 AM",
@@ -507,13 +537,16 @@ class MedicalDashboard extends StatelessWidget {
             color: _getStatusColor(status),
           ),
         ),
-        title: Row(
+        // Name
+        title: Text(
+          item,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        // Status label below name, plus date + location
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              item,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(width: 8),
+            const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
@@ -532,14 +565,9 @@ class MedicalDashboard extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(date),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Row(
               children: [
                 const Icon(
@@ -615,8 +643,6 @@ class MedicalDashboard extends StatelessWidget {
         return "RETURNED";
       case RequestStatus.overdue:
         return "OVERDUE";
-      default:
-        return status.toString().split('.').last.toUpperCase();
     }
   }
 
@@ -634,7 +660,7 @@ class MedicalDashboard extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: Colors.white70,
             ),
           ),
           const SizedBox(height: 16),
@@ -691,8 +717,14 @@ class MedicalDashboard extends StatelessWidget {
     );
   }
 
-  Widget _timelineItem(String title, String time, IconData icon, Color color,
-      {bool isFirst = false, bool isLast = false}) {
+  Widget _timelineItem(
+      String title,
+      String time,
+      IconData icon,
+      Color color, {
+        bool isFirst = false,
+        bool isLast = false,
+      }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -752,7 +784,7 @@ class MedicalDashboard extends StatelessWidget {
   }
 
   // -------------------------------------------------------------
-  // Notifications (Placeholder)
+  // Notifications (Bottom Sheet)
   // -------------------------------------------------------------
   void _showNotifications(BuildContext context) {
     showModalBottomSheet(
@@ -830,30 +862,36 @@ class MedicalDashboard extends StatelessWidget {
     );
   }
 
-  Widget _notificationItem(String title, String message, DateTime time,
-      {bool isUnread = false}) {
+  Widget _notificationItem(
+      String title,
+      String message,
+      DateTime time, {
+        bool isUnread = false,
+      }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isUnread ? const Color(0xFF2E7D32).withOpacity(0.05) : Colors.white,
+        color:
+        isUnread ? const Color(0xFF3B7AF5).withOpacity(0.05) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isUnread
-              ? const Color(0xFF2E7D32).withOpacity(0.2)
+              ? const Color(0xFF3B7AF5).withOpacity(0.2)
               : Colors.grey.withOpacity(0.2),
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Dot indicator for unread notifications
           Container(
             margin: const EdgeInsets.only(top: 2),
             width: 8,
             height: 8,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isUnread ? const Color(0xFF2E7D32) : Colors.transparent,
+              color: isUnread ? const Color(0xFF3B7AF5) : Colors.transparent,
             ),
           ),
           const SizedBox(width: 12),
@@ -906,9 +944,9 @@ class MedicalDashboard extends StatelessWidget {
   }
 
   // -------------------------------------------------------------
-  // Profile (Placeholder)
+  // Profile (Bottom Sheet)
   // -------------------------------------------------------------
-  void _showProfile(BuildContext context) {
+  void _showProfile(BuildContext context, String? referenceId) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -919,7 +957,7 @@ class MedicalDashboard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Example avatar
+            // Circle
             Container(
               width: 100,
               height: 100,
@@ -928,12 +966,12 @@ class MedicalDashboard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                  colors: [Color(0xFF3B7AF5), Color(0xFF1E4EC7)],
                 ),
               ),
               child: Center(
                 child: Text(
-                  user.name[0],
+                  _getFirstName(username)[0], // Extract first letter
                   style: const TextStyle(
                     fontSize: 40,
                     color: Colors.white,
@@ -944,7 +982,7 @@ class MedicalDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              user.name,
+              _getFirstName(username),
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -952,80 +990,19 @@ class MedicalDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              user.email,
+              username, // Show email as username
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2E7D32).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFF2E7D32).withOpacity(0.3),
-                ),
+            Text(
+              "Employee ID: ${referenceId ?? 'N/A'}", // Show reference ID
+              style: const TextStyle(
+                color: Color(0xFF3B7AF5),
+                fontWeight: FontWeight.w500,
               ),
-              child: Text(
-                user.department,
-                style: const TextStyle(
-                  color: Color(0xFF2E7D32),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _profileStatItem("Requests", "24"),
-                  _profileStatItem("Active", "7"),
-                  _profileStatItem("Returned", "17"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: Color(0xFF2E7D32)),
-                    ),
-                    child: const Text("Edit Profile"),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // e.g. Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text("Logout"),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -1033,26 +1010,37 @@ class MedicalDashboard extends StatelessWidget {
     );
   }
 
-  Widget _profileStatItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2E7D32),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
+  /// Extracts the first name from a username
+  String _getFirstName(String username) {
+    final parts = username.split(RegExp(r"[.@]")); // Split on dot or @
+    return parts.isNotEmpty
+        ? parts[0][0].toUpperCase() + parts[0].substring(1)
+        : username;
   }
+}
+
+// -------------------------------------------------------------
+// OPTIONAL: GridPatternPainter if you want the same patterned overlay
+// -------------------------------------------------------------
+class GridPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 1;
+
+    const double gridSize = 30.0;
+
+    // Draw horizontal lines
+    for (double y = 0; y <= size.height; y += gridSize) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+    // Draw vertical lines
+    for (double x = 0; x <= size.width; x += gridSize) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

@@ -1,33 +1,168 @@
 import 'package:flutter/material.dart';
-import 'package:hospital_inventory_management/LoginPage.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+// Import your pages
+import 'package:hospital_inventory_management/LoginPage.dart';
+import 'package:hospital_inventory_management/Employee/EmployeeDashboard.dart';
+import 'package:hospital_inventory_management/Employee/MedicalDashboard%20Functions/user_provider.dart';
 import 'DashboardPage.dart';
 import 'Employee/EmployeeDashboard.dart';
 import 'ItemDetailsPage.dart';
 
-void main() {
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   SystemChrome.setSystemUIOverlayStyle(
+//     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+//   );
+//
+//   // Initialize SharedPreferences and UserProvider
+//   final prefs = await SharedPreferences.getInstance();
+//   final String? username = prefs.getString('username');
+//   final String? role = prefs.getString('role');
+//
+//   runApp(
+//     MultiProvider(
+//       providers: [
+//         ChangeNotifierProvider<UserProvider>(
+//           create: (_) {
+//             UserProvider userProvider = UserProvider();
+//             userProvider.loadUsername();
+//             return userProvider;
+//           },
+//         ),
+//       ],
+//       child: MyApp(initialRoute: _getInitialRoute(username, role)),
+//     ),
+//   );
+// }
+//
+// /// Determines the initial screen based on user login status
+// String _getInitialRoute(String? username, String? role) {
+//   if (username != null && role != null) {
+//     return role.toLowerCase() == 'admin' ? '/dashboard' : '/medical_dashboard';
+//   } else {
+//     return '/login';
+//   }
+// }
+//
+// class MyApp extends StatelessWidget {
+//   final String initialRoute;
+//
+//   const MyApp({Key? key, required this.initialRoute}) : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//         visualDensity: VisualDensity.adaptivePlatformDensity,
+//         inputDecorationTheme: InputDecorationTheme(
+//           border: OutlineInputBorder(
+//             borderRadius: BorderRadius.circular(12),
+//           ),
+//           filled: true,
+//           fillColor: Colors.grey[100],
+//         ),
+//       ),
+//       initialRoute: initialRoute,
+//       routes: {
+//         '/login': (context) => LoginPage(),
+//         '/dashboard': (context) => DashboardPage(),
+//         '/medical_dashboard': (context) {
+//           final userProvider = Provider.of<UserProvider>(context, listen: false);
+//           return MedicalDashboard(user: userProvider.username ?? 'User');
+//         },
+//       },
+//     );
+//   }
+// }
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+    const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      primarySwatch: Colors.blue,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        filled: true,
-        fillColor: Colors.grey[100],
-      ),
+
+  // Initialize SharedPreferences and UserProvider
+  final prefs = await SharedPreferences.getInstance();
+  final String? username = prefs.getString('username');
+  final String? role = prefs.getString('role');
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<UserProvider>(
+          create: (_) {
+            UserProvider userProvider = UserProvider();
+            userProvider.loadUsername(); // Ensure username is loaded
+            return userProvider;
+          },
+        ),
+      ],
+      child: MyApp(initialRoute: _getInitialRoute(username, role)),
     ),
-  home: LoginPage(
-  ),
-  ));
+  );
 }
 
-// Data Models
+/// Determines the initial screen based on user login status
+String _getInitialRoute(String? username, String? role) {
+  if (username != null && role != null) {
+    return role.toLowerCase() == 'admin' ? '/dashboard' : '/medical_dashboard';
+  } else {
+    //return '/login';
+    return '/medical_dashboard';
+  }
+}
+
+class MyApp extends StatelessWidget {
+  final String initialRoute;
+
+  const MyApp({Key? key, required this.initialRoute}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
+          fillColor: Colors.grey[100],
+        ),
+      ),
+      initialRoute: initialRoute,
+      routes: {
+        //'/login': (context) => LoginPage(),
+        '/dashboard': (context) => DashboardPage(),
+        '/medical_dashboard': (context) {
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          return MedicalDashboard(username: userProvider.username ?? 'User');
+        },
+      },
+    );
+  }
+}
+
+/// Default user object (used if provider doesn't have a user loaded yet)
+User defaultUser = User(
+  id: '0',
+  name: 'Unknown',
+  email: 'unknown@example.com',
+  department: 'Unknown',
+  role: UserRole.employee,
+  employeeId: 'EMP000',
+);
+
+// --------------------
+//     DATA MODELS
+// --------------------
 class Item {
   final String id;
   final String name;
@@ -40,7 +175,7 @@ class Item {
   Item({
     required this.id,
     required this.name,
-     this.description = '',
+    this.description = '',
     required this.manufacturerId,
     required this.quantity,
     required this.location,
@@ -48,20 +183,18 @@ class Item {
   });
 }
 
-
-// Additional Data Models
 enum RequestStatus {
   pending,
   approved,
   rejected,
   borrowed,
   returned,
-  overdue
+  overdue,
 }
 
 enum UserRole {
   admin,
-  employee
+  employee,
 }
 
 class User {
@@ -104,28 +237,4 @@ class EquipmentRequest {
     this.actualReturnDate,
     this.approverNote,
   });
-}
-
-
-// Add this to the login page to handle role-based navigation
-void _handleLogin(BuildContext context, UserRole role) {
-  if (role == UserRole.admin) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => DashboardPage()),
-    );
-  } else {
-    final user = User(
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      department: "IT",
-      role: UserRole.employee,
-      employeeId: "EMP001",
-    );
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MedicalDashboard(user: user)),
-    );
-  }
 }

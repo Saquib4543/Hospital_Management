@@ -1,17 +1,16 @@
+// item_details.dart
 class Item_Details {
-  final String id;
+  final String id;               // We'll store qr_id in here
   final String name;
   final String description;
-  final String location;
-  final String issuanceStatus;  // <-- new
-  final String locationId;      // <-- new
-  final String requestNumber;   // <-- new
+  final String issuanceStatus;
+  final String locationId;
+  final String requestNumber;
 
   Item_Details({
     required this.id,
     required this.name,
     required this.description,
-    required this.location,
     required this.issuanceStatus,
     required this.locationId,
     required this.requestNumber,
@@ -19,10 +18,9 @@ class Item_Details {
 
   factory Item_Details.fromJson(Map<String, dynamic> json) {
     return Item_Details(
-      id: json['id'] ?? '',
+      id: json['qr_id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      location: json['location'] ?? '',
       issuanceStatus: json['issuance_status'] ?? '',
       locationId: json['location_id'] ?? '',
       requestNumber: json['request_number'] ?? '',

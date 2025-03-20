@@ -1,15 +1,12 @@
 import 'dart:convert';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:hospital_inventory_management/Employee/Pages/DropDown_Option.dart';
-import 'package:hospital_inventory_management/main.dart';
 
 class EquipmentStatusPage extends StatefulWidget {
-  final User user;
+  final String userReferenceId;
 
-  const EquipmentStatusPage({Key? key, required this.user}) : super(key: key);
+  const EquipmentStatusPage({Key? key, required this.userReferenceId})
+      : super(key: key);
 
   @override
   State<EquipmentStatusPage> createState() => _EquipmentStatusPageState();
@@ -18,30 +15,26 @@ class EquipmentStatusPage extends StatefulWidget {
 class _EquipmentStatusPageState extends State<EquipmentStatusPage> {
   final TextEditingController searchController = TextEditingController();
 
-  // The existing lists for "Recently Added Equipment"
-  List<Map<String, dynamic>> equipmentList = [];
-  List<Map<String, dynamic>> displayedList = [];
-  List<Map<String, dynamic>> filteredList = [];
+  // API list + filtered list
+  List<Map<String, dynamic>> apiDevicesList = [];
+  List<Map<String, dynamic>> filteredDevicesList = [];
 
-  // NEW: For the itemdetails API
-  List<Map<String, dynamic>> statusApiDevicesList = [];
-  bool statusIsLoadingApi = false;
-  String? statusApiErrorMessage;
+  bool isLoadingApi = false;
+  String? apiErrorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadEquipment();    // existing logic
-    _fetchStatusApi();   // fetch data from the new API
+    _fetchApiDevices();
   }
 
-  //----------------------------------------------------------------------------
-  // 1) FETCH DATA FROM https://uat.goclaims.in/inventory_hub/itemdetails
-  //----------------------------------------------------------------------------
-  Future<void> _fetchStatusApi() async {
+  // ---------------------------------------------------------------------------
+  //  1) FETCH DATA FROM https://uat.goclaims.in/inventory_hub/itemdetails
+  // ---------------------------------------------------------------------------
+  Future<void> _fetchApiDevices() async {
     setState(() {
-      statusIsLoadingApi = true;
-      statusApiErrorMessage = null;
+      isLoadingApi = true;
+      apiErrorMessage = null;
     });
 
     try {
@@ -54,119 +47,47 @@ class _EquipmentStatusPageState extends State<EquipmentStatusPage> {
         jsonData.map((item) => item as Map<String, dynamic>).toList();
 
         setState(() {
-          statusApiDevicesList = devices;
-          statusIsLoadingApi = false;
+          apiDevicesList = devices;
+          // Initially, the filtered list is the full set
+          filteredDevicesList = devices;
+          isLoadingApi = false;
         });
       } else {
         setState(() {
-          statusApiErrorMessage =
-          'Error: ${response.statusCode} while fetching status devices.';
-          statusIsLoadingApi = false;
+          apiErrorMessage = 'Error ${response.statusCode} loading devices.';
+          isLoadingApi = false;
         });
       }
     } catch (e) {
       setState(() {
-        statusApiErrorMessage = 'Exception: $e';
-        statusIsLoadingApi = false;
+        apiErrorMessage = 'Exception: $e';
+        isLoadingApi = false;
       });
     }
   }
 
-  //----------------------------------------------------------------------------
-  // 2) EXISTING LOGIC FOR "Recently Added Equipment"
-  //----------------------------------------------------------------------------
-  void _loadEquipment() {
-    final List<Map<String, dynamic>> allEquipment = [];
-    for (var item in DropDownOption.equipmentData) {
-      allEquipment.add(item);
+  // ---------------------------------------------------------------------------
+  //  2) SEARCH / FILTER
+  // ---------------------------------------------------------------------------
+  void _filterDevices(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredDevicesList = List.from(apiDevicesList);
+      });
+      return;
     }
-
+    query = query.toLowerCase();
     setState(() {
-      equipmentList = allEquipment;
-      displayedList = _getRandomItems(equipmentList, 10);
-      filteredList = List.from(displayedList);
+      filteredDevicesList = apiDevicesList.where((device) {
+        final desc = (device['description'] ?? '').toString().toLowerCase();
+        return desc.contains(query);
+      }).toList();
     });
   }
 
-  List<Map<String, dynamic>> _getRandomItems(
-      List<Map<String, dynamic>> list, int count) {
-    if (list.length <= count) return List.from(list);
-    list.shuffle(Random());
-    return list.sublist(0, count);
-  }
-
-  void _filterEquipment(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        filteredList = List.from(displayedList);
-      } else {
-        filteredList = equipmentList
-            .where((item) {
-          final itemName = (item['name'] ?? '').toLowerCase();
-          return itemName.contains(query.toLowerCase());
-        })
-            .toList();
-      }
-    });
-  }
-
-  void _showEquipmentDialog(Map<String, dynamic> equipment) {
-    final status = (equipment['status'] ?? '').toString().toLowerCase();
-    final category = equipment['category'] ?? 'Unknown';
-    final name = equipment['name'] ?? 'Unknown';
-    final condition = equipment['condition'] ?? 'Unknown';
-    final description = equipment['description'] ?? 'No description';
-    final totalEquipments = (equipment['total_equipments'] ?? 0).toString();
-    final equipmentsAvailable =
-    (equipment['equipments_available'] ?? 0).toString();
-    final bool isAvailable = status == 'available';
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isAvailable ? 'Item is Available!' : 'Item is Unavailable!',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isAvailable ? Colors.green[700] : Colors.red[700],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text('Category: $category'),
-                  Text('Name: $name'),
-                  Text('Status: ${equipment['status'] ?? 'Unknown'}'),
-                  Text('Condition: $condition'),
-                  Text('Description: $description'),
-                  Text('Total Equipments: $totalEquipments'),
-                  Text('Equipments Available: $equipmentsAvailable'),
-                  const SizedBox(height: 20),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
+  // ---------------------------------------------------------------------------
+  //  3) LOGOUT (IF NEEDED)
+  // ---------------------------------------------------------------------------
   void _logout() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Logging out...")),
@@ -174,15 +95,68 @@ class _EquipmentStatusPageState extends State<EquipmentStatusPage> {
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 
-  //----------------------------------------------------------------------------
-  // 3) BUILD UI
-  //----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  //  4) SHOW ITEM DIALOG
+  // ---------------------------------------------------------------------------
+  void _showItemDialog(Map<String, dynamic> device) {
+    final itemId = device['item_id']?.toString() ?? 'Unknown';
+    final desc = device['description']?.toString() ?? 'No description';
+    final issuance = device['issuance_status']?.toString() ?? 'Unknown';
+    final fromDate = device['from_date']?.toString() ?? '';
+    final toDate = device['to_date']?.toString() ?? '';
+    final refId = device['ref_id']?.toString() ?? '';
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  desc,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text('Item ID: $itemId'),
+                Text('Issuance: $issuance'),
+                Text('Ref ID: $refId'),
+                Text('From: $fromDate'),
+                Text('To: $toDate'),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("OK"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  //  5) BUILD UI
+  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Updated AppBar color to match new gradient theme
       appBar: AppBar(
         title: const Text("Equipment Status"),
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: const Color(0xFF3B7AF5),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -194,179 +168,128 @@ class _EquipmentStatusPageState extends State<EquipmentStatusPage> {
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF2E7D32), Color(0xFFF5F5F5)],
-            stops: [0.0, 0.1],
+      body: Stack(
+        children: [
+          // 1) Gradient background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF3B7AF5), Color(0xFF1E4EC7)],
+              ),
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // (A) NEW BACKGROUND CARD (API DATA)
-              Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Equipment from API",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E7D32),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (statusIsLoadingApi) ...[
-                        Center(child: CircularProgressIndicator()),
-                      ] else if (statusApiErrorMessage != null) ...[
-                        Text(
-                          statusApiErrorMessage!,
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ] else ...[
-                        if (statusApiDevicesList.isEmpty)
-                          const Center(child: Text("No devices found."))
-                        else
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: statusApiDevicesList.length,
-                            itemBuilder: (context, index) {
-                              final device = statusApiDevicesList[index];
-                              final itemId =
-                                  device['item_id']?.toString() ?? 'Unknown';
-                              final desc =
-                                  device['description']?.toString() ?? '';
-                              final issuanceStatus =
-                                  device['issuance_status']?.toString() ?? '';
-                              final fromDate =
-                                  device['from_date']?.toString() ?? '';
-                              final toDate =
-                                  device['to_date']?.toString() ?? '';
-                              final refId =
-                                  device['ref_id']?.toString() ?? '';
 
-                              return ListTile(
-                                contentPadding:
-                                const EdgeInsets.symmetric(vertical: 4),
-                                leading: const Icon(
-                                  Icons.devices_other,
-                                  color: Color(0xFF2E7D32),
-                                ),
-                                title: Text(
-                                  desc.isNotEmpty
-                                      ? desc
-                                      : '(No description)',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  "Item ID: $itemId\n"
-                                      "Issuance: $issuanceStatus\n"
-                                      "Ref ID: $refId\n"
-                                      "From: $fromDate\n"
-                                      "To: $toDate",
-                                ),
-                              );
-                            },
-                          ),
-                      ],
-                    ],
+          // 2) Optional pattern overlay (like in Login)
+          Opacity(
+            opacity: 0.05,
+            child: CustomPaint(
+              painter: GridPatternPainter(),
+              size: MediaQuery.of(context).size,
+            ),
+          ),
+
+          // 3) Main content
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // (A) SEARCH BAR
+                TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    hintText: "Search by description...",
+                    prefixIcon: const Icon(Icons.search),
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
+                  onChanged: _filterDevices,
                 ),
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // (B) SEARCH BAR
-              TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  hintText: "Search equipment...",
-                  prefixIcon: const Icon(Icons.search),
-                  fillColor: Colors.white,
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onChanged: _filterEquipment,
-              ),
-
-              const SizedBox(height: 20),
-
-              // (C) RECENTLY ADDED EQUIPMENT LIST
-              Expanded(
-                child: Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Recently Added Equipment",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Divider(),
-                        Expanded(
-                          child: filteredList.isEmpty
-                              ? const Center(
-                              child: Text("No equipment available"))
-                              : ListView.builder(
-                            itemCount: filteredList.length,
-                            itemBuilder: (context, index) {
-                              final item = filteredList[index];
-                              final name = item['name'] ?? '';
-                              final category = item['category'] ?? '';
-                              final status = item['status'] ?? '';
-                              final availableCount =
-                                  item['equipments_available'] ?? 0;
-
-                              return ListTile(
-                                onTap: () =>
-                                    _showEquipmentDialog(item),
-                                title: Text(name),
-                                subtitle: Text(
-                                  "Category: $category\n"
-                                      "Status: $status\n"
-                                      "Available: $availableCount",
-                                ),
-                                leading: const Icon(
-                                  Icons.precision_manufacturing,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                // (B) EQUIPMENT LIST (from API)
+                Expanded(
+                  child: Card(
+                    color: Colors.white,
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildApiList(),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
+
+  Widget _buildApiList() {
+    if (isLoadingApi) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (apiErrorMessage != null) {
+      return Text(apiErrorMessage!, style: const TextStyle(color: Colors.red));
+    } else if (filteredDevicesList.isEmpty) {
+      return const Center(child: Text("No matching devices found."));
+    } else {
+      return ListView.builder(
+        itemCount: filteredDevicesList.length,
+        itemBuilder: (context, index) {
+          final device = filteredDevicesList[index];
+          final itemId = device['item_id']?.toString() ?? 'Unknown';
+          final desc = device['description']?.toString() ?? '(No description)';
+          final issuance = device['issuance_status']?.toString() ?? 'Unknown';
+
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(vertical: 4),
+            leading: const Icon(
+              Icons.devices_other,
+              color: Color(0xFF3B7AF5), // or 0xFF2E7D32
+            ),
+            title: Text(
+              desc,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text("Item ID: $itemId\nIssuance: $issuance"),
+            onTap: () => _showItemDialog(device),
+          );
+        },
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Optional grid pattern painter
+// ---------------------------------------------------------------------------
+class GridPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 1;
+
+    const gridSize = 30.0;
+
+    for (double y = 0; y <= size.height; y += gridSize) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+    for (double x = 0; x <= size.width; x += gridSize) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

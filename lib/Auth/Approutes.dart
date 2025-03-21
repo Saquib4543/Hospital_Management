@@ -27,7 +27,7 @@ class AppRoutes {
     ),
     GetPage(
       name: '/employee-dashboard',
-      page: () => MedicalDashboard(user: Get.find<AuthService>().currentUser.value!),
+      page: () => MedicalDashboard(),
       middlewares: [EmployeeMiddleware()],
     ),
   ];

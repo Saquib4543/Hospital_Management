@@ -243,30 +243,48 @@ class AuthService extends GetxService {
       print('Error saving user session: $e');
     }
   }
-
   Future<void> logout({bool clearStorageOnly = false}) async {
     try {
-      /* ✅ Commented out the logout API call for now
-      if (!clearStorageOnly && refId != null) {
-        await http.post(
-          Uri.parse('$baseUrl/logout'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'ref_id': refId}),
-        );
-      }
-      */
-
-    } catch (e) {
-      print('Logout API error: $e');
-    } finally {
+      // ✅ Remove stored ref_id and user data
       _storage.remove('auth_ref_id');
       _storage.remove('user_data');
 
+      // ✅ Clear in-memory user session
       currentUser.value = null;
 
+      // ✅ Navigate to login page (only if it's a full logout)
       if (!clearStorageOnly) {
-        Get.offAllNamed('/login');
+        Get.offAllNamed('/login'); // Redirect to login page
       }
+    } catch (e) {
+      print('Logout error: $e');
     }
   }
+
+
+// Future<void> logout({bool clearStorageOnly = false}) async {
+  //   try {
+  //     /* ✅ Commented out the logout API call for now
+  //     if (!clearStorageOnly && refId != null) {
+  //       await http.post(
+  //         Uri.parse('$baseUrl/logout'),
+  //         headers: {'Content-Type': 'application/json'},
+  //         body: jsonEncode({'ref_id': refId}),
+  //       );
+  //     }
+  //     */
+  //
+  //   } catch (e) {
+  //     print('Logout API error: $e');
+  //   } finally {
+  //     _storage.remove('auth_ref_id');
+  //     _storage.remove('user_data');
+  //
+  //     currentUser.value = null;
+  //
+  //     if (!clearStorageOnly) {
+  //       Get.offAllNamed('/login');
+  //     }
+  //   }
+  // }
 }

@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../LoginPage.dart';
 import '../main.dart';
 import 'MedicalDashboard Functions/user_provider.dart';
@@ -20,14 +19,14 @@ enum RequestStatus {
 }
 
 class MedicalDashboard extends StatelessWidget {
-  final String username;
+  // final String username;
 
-  const MedicalDashboard({Key? key, required this.username}) : super(key: key);
+  const MedicalDashboard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    String? userReferenceId = userProvider.referenceId;
+    // final userProvider = Provider.of<UserProvider>(context);
+    // String? userReferenceId = userProvider.referenceId;
 
     return Scaffold(
       // If you prefer an AppBar that matches the new gradient's top color:
@@ -41,10 +40,10 @@ class MedicalDashboard extends StatelessWidget {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () => _showNotifications(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => _showProfile(context, userReferenceId),
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.person_outline),
+          //   onPressed: () => _showProfile(context, userReferenceId),
+          // ),
         ],
       ),
 
@@ -77,7 +76,7 @@ class MedicalDashboard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // A container or card for the top “Staff Header”
-                _buildStaffHeader(userReferenceId),
+                // _buildStaffHeader(userReferenceId),
                 const SizedBox(height: 8),
 
                 // Summaries + Quick actions, etc. in white cards
@@ -91,7 +90,7 @@ class MedicalDashboard extends StatelessWidget {
         ],
       ),
 
-      drawer: _buildDrawer(context, userReferenceId),
+      // drawer: _buildDrawer(context, userReferenceId),
     );
   }
 
@@ -119,7 +118,7 @@ class MedicalDashboard extends StatelessWidget {
                   radius: 36,
                   backgroundColor: Colors.white,
                   child: Text(
-                    _getFirstName(username)[0], // Extract first letter
+                    '', // Extract first letter
                     style: const TextStyle(
                       fontSize: 30,
                       color: Color(0xFF3B7AF5),
@@ -128,21 +127,7 @@ class MedicalDashboard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  _getFirstName(username), // Extract first name
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  username,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
+
                 Text(
                   "Employee ID: ${referenceId ?? 'N/A'}", // Show reference ID
                   style: const TextStyle(
@@ -211,7 +196,7 @@ class MedicalDashboard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Hello, ${_getFirstName(username)}",
+                    "Hello, ",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -971,7 +956,7 @@ class MedicalDashboard extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  _getFirstName(username)[0], // Extract first letter
+                 '', // Extract first letter
                   style: const TextStyle(
                     fontSize: 40,
                     color: Colors.white,
@@ -982,7 +967,7 @@ class MedicalDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              _getFirstName(username),
+              '',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -990,7 +975,7 @@ class MedicalDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              username, // Show email as username
+              '', // Show email as username
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],

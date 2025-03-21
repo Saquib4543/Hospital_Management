@@ -217,7 +217,7 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
   void _navigateToMedicalDashboard() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (_) => MedicalDashboard(username: currentUserId),
+        builder: (_) => MedicalDashboard(),
       ),
           (route) => false,
     );

@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../Auth/AuthService.dart';
 import '../LoginPage.dart';
 import '../main.dart';
 import 'MedicalDashboard Functions/user_provider.dart';
@@ -33,13 +35,24 @@ class MedicalDashboard extends StatelessWidget {
       appBar: AppBar(
         title: const Text("MediTrack Pro",style: TextStyle(color: Colors.white),),
         // Example: matching the first color in your new gradient
-        backgroundColor: const Color(0xFF3B7AF5),
+        // backgroundColor: const Color(0xFF3B7AF5),
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
             onPressed: () => _showNotifications(context),
           ),
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.white),
+            tooltip: 'Logout',
+            onPressed: () async {
+              bool confirmLogout = await _showLogoutDialog(context);
+              if (confirmLogout) {
+                await AuthService.to.logout();
+              }
+            },
+          ),
+
           // IconButton(
           //   icon: const Icon(Icons.person_outline),
           //   onPressed: () => _showProfile(context, userReferenceId),
@@ -157,6 +170,29 @@ class MedicalDashboard extends StatelessWidget {
         ],
       ),
     );
+  }
+  Future<bool> _showLogoutDialog(BuildContext context) async {
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Logout", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          content: Text("Are you sure you want to log out?", style: GoogleFonts.poppins()),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false), // Dismiss dialog
+              child: Text("Cancel", style: GoogleFonts.poppins(fontSize: 14)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true), // Confirm logout
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text("Logout", style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
   }
 
   Widget _drawerItem(IconData icon, String title) {
@@ -956,7 +992,7 @@ class MedicalDashboard extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  '', // Extract first letter
+                 '', // Extract first letter
                   style: const TextStyle(
                     fontSize: 40,
                     color: Colors.white,

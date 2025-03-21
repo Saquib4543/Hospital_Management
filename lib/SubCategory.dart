@@ -8,7 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:html' as html;
+
+import 'dart:io' show File;
+
+import 'package:url_launcher/url_launcher.dart';
+
 
 class CategoryDetailsPage extends StatefulWidget {
   final int categoryId;
@@ -467,24 +471,19 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
 
   Future<void> _downloadQRCode(String imageUrl) async {
     try {
+      _showLoadingSnackBar("Downloading QR Code...");
+
       if (kIsWeb) {
-        // 🌐 Web: Download image as a file
-        final response = await http.get(Uri.parse(imageUrl));
-        final blob = html.Blob([response.bodyBytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute("download", "qr_code.png")
-          ..click();
-
-        html.Url.revokeObjectUrl(url);
-
-        _showSuccessSnackBar("QR Code downloaded successfully");
+        // Web platform: Use URL launcher instead of dart:html
+        final Uri uri = Uri.parse(imageUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          _showSuccessSnackBar("QR Code download started");
+        } else {
+          throw Exception('Could not launch $imageUrl');
+        }
       } else {
-        // 📱 Mobile: Save image to gallery
-        _showLoadingSnackBar("Downloading QR Code...");
-
-        // Get temporary directory
+        // Mobile platforms
         final directory = await getTemporaryDirectory();
         final filename = 'qr_code_${DateTime.now().millisecondsSinceEpoch}.png';
         final path = '${directory.path}/$filename';
@@ -496,8 +495,7 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
 
         // Save to gallery
         final result = await ImageGallerySaver.saveFile(path);
-
-        if (result['isSuccess']) {
+        if (result['isSuccess'] == true || result != null) {
           _showSuccessSnackBar("QR Code saved to gallery");
         } else {
           throw Exception("Failed to save image to gallery");

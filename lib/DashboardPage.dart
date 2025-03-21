@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'AddEditItemPage.dart';
+import 'Auth/AuthService.dart';
 import 'ItemDetailsPage.dart';
 import 'ItemListPage.dart';
 import 'ItemSearchDelegate.dart';
@@ -164,9 +166,53 @@ class _DashboardPageState extends State<DashboardPage> {
           "Manage your inventory efficiently and track performance",
           style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         ),
+
+        IconButton(
+          icon: Icon(Icons.logout, color: Colors.blue[700]),
+          tooltip: 'Logout',
+    onPressed: () async {
+    bool confirmLogout = await _showLogoutDialog(context);
+    if (confirmLogout) {
+    await AuthService.to.logout();
+    }
+    },
+    style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.grey, // Logout button color
+    foregroundColor: Colors.white,
+    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+    ),
+    ),
+        ),
       ],
     );
   }
+
+  Future<bool> _showLogoutDialog(BuildContext context) async {
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Logout", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          content: Text("Are you sure you want to log out?", style: GoogleFonts.poppins()),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false), // Dismiss dialog
+              child: Text("Cancel", style: GoogleFonts.poppins(fontSize: 14)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true), // Confirm logout
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text("Logout", style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+  }
+
 
   Widget _buildLoadingStats() {
     return LayoutBuilder(

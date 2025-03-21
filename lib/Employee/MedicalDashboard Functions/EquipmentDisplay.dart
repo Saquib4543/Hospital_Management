@@ -551,7 +551,28 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
 
   // ----------------- SCANNED ITEMS LIST (CHECKBOXES) -----------------
   Widget _buildEquipmentSelection(List<Item_Details> displayedItems) {
-    // Number selected among *displayed* items
+    if (displayedItems.isEmpty) {
+      // If no items match the chosen status, show a text message
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child: Column(
+          children: const [
+            Text(
+              "Scanned Items:",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text("No items available for this status."),
+          ],
+        ),
+      );
+    }
+
+    // Otherwise show the normal list
     final selectedCount = displayedItems.where((item) {
       final idx = allItems.indexOf(item);
       return isSelected[idx];

@@ -6,6 +6,8 @@ import 'package:hospital_inventory_management/Employee/Pages/DropDown_Option.dar
 import 'package:hospital_inventory_management/main.dart';
 import 'package:hospital_inventory_management/Employee/Pages/Camera_Out_Controller.dart';
 
+import '../../models/user_model.dart';
+
 class RequestEquipmentPage extends StatefulWidget {
   final User user;
 

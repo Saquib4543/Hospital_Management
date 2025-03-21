@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hospital_inventory_management/main.dart';
 import 'package:hospital_inventory_management/Employee/Pages/Camera_In_Controller.dart';
 
+import '../../models/user_model.dart';
+
 class ReturnMedicalEquipmentPage extends StatefulWidget {
   final User user;
 

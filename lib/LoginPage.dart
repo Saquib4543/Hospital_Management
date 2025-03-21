@@ -1,29 +1,9 @@
+// lib/pages/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
-import 'DashboardPage.dart';
-import 'Employee/EmployeeDashboard.dart';
-import 'main.dart';
-
-// Define dummy users
-final List<User> dummyUsers = [
-  User(
-    id: "1",
-    name: "Admin User",
-    email: "admin@gmail.com",
-    department: "Management",
-    role: UserRole.admin,
-    employeeId: "ADM001",
-  ),
-  User(
-    id: "2",
-    name: "Employee User",
-    email: "employee@gmail.com",
-    department: "IT",
-    role: UserRole.employee,
-    employeeId: "EMP001",
-  ),
-];
+import 'Auth/AuthService.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -35,10 +15,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isObscure = true;
-  bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  final _authService = AuthService.to;
 
   @override
   void initState() {
@@ -81,22 +62,17 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     String password = _passwordController.text.trim();
 
     if (_formKey.currentState?.validate() ?? false) {
-      setState(() {
-        _isLoading = true;
-      });
+      final success = await _authService.login(username, password);
 
-      // Simulate network delay
-      await Future.delayed(Duration(milliseconds: 1500));
+      if (success) {
+        // Navigate based on user role
+        final user = _authService.currentUser.value;
 
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Dummy authentication logic
-      if (username == "admin" && password == "admin123") {
-        _navigateToDashboard(dummyUsers[0]);
-      } else if (username == "employee" && password == "emp123") {
-        _navigateToDashboard(dummyUsers[1]);
+        if (user?.isAdmin == true) {
+          Get.offAllNamed('/admin-dashboard');
+        } else {
+          Get.offAllNamed('/employee-dashboard');
+        }
       } else {
         _showErrorAnimation();
       }
@@ -110,7 +86,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           children: [
             Icon(Icons.error_outline, color: Colors.white),
             SizedBox(width: 12),
-            Text("Invalid username or password"),
+            Text(_authService.errorMessage.value.isEmpty
+                ? "Invalid username or password"
+                : _authService.errorMessage.value),
           ],
         ),
         backgroundColor: Colors.redAccent,
@@ -126,27 +104,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     HapticFeedback.mediumImpact();
     _animationController.reset();
     _animationController.forward();
-  }
-
-  void _navigateToDashboard(User user) {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-        user.role == UserRole.admin ? DashboardPage() : MedicalDashboard(user: user),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOutCubic;
-
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-          var offsetAnimation = animation.drive(tween);
-
-          return SlideTransition(position: offsetAnimation, child: child);
-        },
-        transitionDuration: Duration(milliseconds: 500),
-      ),
-    );
   }
 
   @override
@@ -322,8 +279,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   SizedBox(
                                     width: double.infinity,
                                     height: 56,
-                                    child: ElevatedButton(
-                                      onPressed: _isLoading ? null : _handleLogin,
+                                    child: Obx(() => ElevatedButton(
+                                      onPressed: _authService.isLoading.value ? null : _handleLogin,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: isDarkMode
                                             ? Colors.blue[700]
@@ -337,7 +294,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                           borderRadius: BorderRadius.circular(16),
                                         ),
                                       ),
-                                      child: _isLoading
+                                      child: _authService.isLoading.value
                                           ? SizedBox(
                                         width: 24,
                                         height: 24,
@@ -354,60 +311,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                           letterSpacing: 0.5,
                                         ),
                                       ),
-                                    ),
-                                  ),
-
-                                  SizedBox(height: 24),
-
-                                  // Footer
-                                  Center(
-                                    child: RichText(
-                                      text: TextSpan(
-                                        style: TextStyle(
-                                          color: isDarkMode
-                                              ? Colors.grey[400]
-                                              : Colors.grey[700],
-                                          fontSize: 14,
-                                        ),
-                                        children: [
-                                          TextSpan(text: "Admin login: "),
-                                          TextSpan(
-                                            text: "admin/admin123",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: isDarkMode
-                                                  ? Colors.blue[300]
-                                                  : Colors.blue[700],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Center(
-                                    child: RichText(
-                                      text: TextSpan(
-                                        style: TextStyle(
-                                          color: isDarkMode
-                                              ? Colors.grey[400]
-                                              : Colors.grey[700],
-                                          fontSize: 14,
-                                        ),
-                                        children: [
-                                          TextSpan(text: "Employee login: "),
-                                          TextSpan(
-                                            text: "employee/emp123",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: isDarkMode
-                                                  ? Colors.blue[300]
-                                                  : Colors.blue[700],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                    )),
                                   ),
                                 ],
                               ),

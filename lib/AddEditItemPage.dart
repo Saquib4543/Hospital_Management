@@ -529,6 +529,145 @@ class _AddItemPageState extends State<AddItemPage> with SingleTickerProviderStat
   final TextEditingController _remainingLifeController = TextEditingController();
   final TextEditingController _usageController = TextEditingController();
 
+  // List of manufacturers
+  final List<Manufacturer> manufacturers = [
+    Manufacturer(
+      id: "1",
+      name: "Cipla Ltd.",
+      contact: "Umang Vohra",
+      email: "contact@cipla.com",
+      phone: "+91 22 2482 6000",
+      address: "Cipla House, Peninsula Business Park, Mumbai, Maharashtra 400013",
+      category: "Pharmaceuticals",
+    ),
+    Manufacturer(
+      id: "2",
+      name: "Sun Pharmaceutical Industries Ltd.",
+      contact: "Dilip Shanghvi",
+      email: "info@sunpharma.com",
+      phone: "+91 22 4324 4324",
+      address: "Sun House, CTS No. 201 B/1, Western Express Highway, Goregaon (E), Mumbai 400063",
+      category: "Pharmaceuticals",
+    ),
+    Manufacturer(
+      id: "3",
+      name: "Dr. Reddy's Laboratories",
+      contact: "G V Prasad",
+      email: "contact@drreddys.com",
+      phone: "+91 40 4900 2900",
+      address: "8-2-337, Road No. 3, Banjara Hills, Hyderabad, Telangana 500034",
+      category: "Pharmaceuticals",
+    ),
+    Manufacturer(
+      id: "4",
+      name: "Hindustan Syringes & Medical Devices Ltd.",
+      contact: "Rajiv Nath",
+      email: "info@hmdhealthcare.com",
+      phone: "+91 129 4070000",
+      address: "175/1 Bhai Mohan Singh Nagar, Faridabad, Haryana 121004",
+      category: "Medical Devices",
+    ),
+    Manufacturer(
+      id: "5",
+      name: "Poly Medicure Ltd.",
+      contact: "Himanshu Baid",
+      email: "info@polymedicure.com",
+      phone: "+91 120 429 2100",
+      address: "Plot No. 105, 106, Sector 59, Faridabad, Haryana 121004",
+      category: "Medical Devices",
+    ),
+    Manufacturer(
+      id: "6",
+      name: "Trivitron Healthcare",
+      contact: "G.S.K. Velu",
+      email: "info@trivitron.com",
+      phone: "+91 44 6630 1000",
+      address: "15, Jawaharlal Nehru Road, Ekkattuthangal, Chennai, Tamil Nadu 600032",
+      category: "Medical Equipment",
+    ),
+    Manufacturer(
+      id: "7",
+      name: "BPL Medical Technologies",
+      contact: "Sunil Khurana",
+      email: "info@bplmedicaltechnologies.com",
+      phone: "+91 80 2839 5963",
+      address: "11th KM, Bannerghatta Road, Arakere, Bengaluru, Karnataka 560076",
+      category: "Medical Equipment",
+    ),
+    Manufacturer(
+      id: "8",
+      name: "Transasia Bio-Medicals Ltd.",
+      contact: "Suresh Vazirani",
+      email: "info@transasia.co.in",
+      phone: "+91 22 4040 8000",
+      address: "Transasia House, 8 Chandivali Studio Road, Mumbai, Maharashtra 400072",
+      category: "Diagnostics",
+    ),
+    Manufacturer(
+      id: "9",
+      name: "J Mitra & Co. Pvt. Ltd.",
+      contact: "Jatin Mahajan",
+      email: "info@jmitra.co.in",
+      phone: "+91 11 4567 7777",
+      address: "A-180, Okhla Industrial Area, Phase-1, New Delhi 110020",
+      category: "Diagnostics",
+    ),
+    Manufacturer(
+      id: "10",
+      name: "Stryker India Pvt. Ltd.",
+      contact: "Ram Rangarajan",
+      email: "india.info@stryker.com",
+      phone: "+91 124 4964 100",
+      address: "8th Floor, Building 9A, DLF Cyber City, Gurgaon, Haryana 122002",
+      category: "Orthopaedic Devices",
+    ),
+    Manufacturer(
+      id: "11",
+      name: "Paramount Surgimed Ltd.",
+      contact: "Shaily Grover",
+      email: "info@paramountsurgimed.com",
+      phone: "+91 11 4567 9999",
+      address: "66, Sector 25, Phase II, Faridabad, Haryana 121004",
+      category: "Surgical Instruments",
+    ),
+    Manufacturer(
+      id: "12",
+      name: "Romsons Scientific & Surgical Industries Pvt. Ltd.",
+      contact: "Pawan Sharma",
+      email: "info@romsons.com",
+      phone: "+91 120 2770 001",
+      address: "51, Sector 27-C, Mathura Road, Faridabad, Haryana 121003",
+      category: "Disposable Medical Supplies",
+    ),
+    Manufacturer(
+      id: "13",
+      name: "Meril Life Sciences Pvt. Ltd.",
+      contact: "Sanjeev Bhatt",
+      email: "info@merillife.com",
+      phone: "+91 265 2646 300",
+      address: "Survey No. 135/139, Bilakhia House, Muktanand Marg, Vadodara, Gujarat 390015",
+      category: "Cardiovascular Devices",
+    ),
+    Manufacturer(
+      id: "14",
+      name: "Narang Medical Ltd.",
+      contact: "Vijay Narang",
+      email: "narang@narang.com",
+      phone: "+91 11 4559 5900",
+      address: "Narang Tower, 23 Rajindra Place, New Delhi 110008",
+      category: "Hospital Furniture",
+    ),
+    Manufacturer(
+      id: "15",
+      name: "TTK Healthcare Ltd.",
+      contact: "T T Jagannathan",
+      email: "info@ttkhealthcare.com",
+      phone: "+91 44 2831 0000",
+      address: "No. 6, Cathedral Road, Chennai, Tamil Nadu 600086",
+      category: "Reproductive Healthcare",
+    ),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -562,50 +701,161 @@ class _AddItemPageState extends State<AddItemPage> with SingleTickerProviderStat
         labelText: label,
         labelStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        prefixIcon: Icon(icon, color: Colors.blue),
+        prefixIcon: Icon(icon, color: Colors.indigo),
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.indigo, width: 2),
+        ),
       ),
       validator: (value) => value!.isEmpty ? 'Please enter $label' : null,
     );
   }
 
-  Widget _buildDropdown(String label, List<String> items, String? selectedValue, Function(String?) onChanged, IconData icon) {
+  Widget _buildManufacturerDropdown() {
     return DropdownButtonFormField<String>(
-      value: selectedValue,
+      value: selectedManufacturer,
       decoration: InputDecoration(
-        labelText: label,
+        labelText: "Manufacturer",
         labelStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        prefixIcon: Icon(icon, color: Colors.blue),
+        prefixIcon: Icon(Icons.factory, color: Colors.indigo),
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.indigo, width: 2),
+        ),
       ),
-      items: items.map((String value) {
+      items: manufacturers.map((Manufacturer manufacturer) {
         return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value, style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87)),
+          value: manufacturer.id,
+          child: Text(
+            manufacturer.name,
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+            overflow: TextOverflow.ellipsis,
+          ),
         );
       }).toList(),
-      onChanged: onChanged,
-      validator: (value) => value == null ? 'Please select $label' : null,
+      onChanged: (String? value) {
+        setState(() {
+          selectedManufacturer = value;
+        });
+      },
+      validator: (value) => value == null ? 'Please select a manufacturer' : null,
+      isExpanded: true,
+      icon: Icon(Icons.arrow_drop_down, color: Colors.indigo),
+      dropdownColor: Colors.white,
+    );
+  }
+
+  Widget _buildActiveFlagDropdown() {
+    return DropdownButtonFormField<String>(
+      value: selectedActiveFlag,
+      decoration: InputDecoration(
+        labelText: "Active Flag",
+        labelStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: Icon(Icons.toggle_on, color: Colors.indigo),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.indigo, width: 2),
+        ),
+      ),
+      items: ["active", "inactive"].map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(
+            value.capitalize(),
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+          ),
+        );
+      }).toList(),
+      onChanged: (String? value) {
+        setState(() {
+          selectedActiveFlag = value;
+        });
+      },
+      validator: (value) => value == null ? 'Please select active flag' : null,
+      isExpanded: true,
+      icon: Icon(Icons.arrow_drop_down, color: Colors.indigo),
+      dropdownColor: Colors.white,
     );
   }
 
   Future<void> _submitItem() async {
     if (_formKey.currentState?.validate() ?? false) {
+      // Show loading overlay
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => Center(
-          child: CircularProgressIndicator(),
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Colors.indigo),
+                SizedBox(height: 16),
+                Text(
+                  "Saving item...",
+                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
         ),
       );
+
+      // Get manufacturer name from selected ID
+      String manufacturerName = "Unknown";
+      if (selectedManufacturer != null) {
+        final selectedMfr = manufacturers.firstWhere(
+              (m) => m.id == selectedManufacturer,
+          orElse: () => Manufacturer(
+            id: "0",
+            name: "Unknown",
+            contact: "",
+            email: "",
+            phone: "",
+            address: "",
+            category: "",
+          ),
+        );
+        manufacturerName = selectedMfr.name;
+      }
 
       Map<String, dynamic> requestBody = {
         "item_name": _nameController.text.trim(),
         "category": _categoryController.text.trim(),
         "uom_id": _uomController.text.trim(),
         "price": _priceController.text.trim(),
-        "manufacturer": selectedManufacturer ?? "Unknown",
+        "manufacturer_id": selectedManufacturer ?? "0",
+        "manufacturer": manufacturerName,
         "batch_number": _batchNumberController.text.trim(),
         "remaining_life": _remainingLifeController.text.trim(),
         "active_flag": selectedActiveFlag ?? "active",
@@ -619,22 +869,118 @@ class _AddItemPageState extends State<AddItemPage> with SingleTickerProviderStat
           body: jsonEncode(requestBody),
         );
 
-        Navigator.pop(context);
+        Navigator.pop(context); // Close loading dialog
 
         if (response.statusCode == 200 || response.statusCode == 201) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Item added successfully!")),
+          // Show success message
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green, size: 28),
+                  SizedBox(width: 8),
+                  Text(
+                    "Success",
+                    style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              content: Text(
+                "Item has been added successfully.",
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    Navigator.pop(context); // Return to previous screen
+                  },
+                  child: Text(
+                    "OK",
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.indigo,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
-          Navigator.pop(context);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to add item: ${response.body}")),
+          // Show error message
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Icon(Icons.error, color: Colors.red, size: 28),
+                  SizedBox(width: 8),
+                  Text(
+                    "Error",
+                    style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              content: Text(
+                "Failed to add item: ${response.body}",
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    "OK",
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.indigo,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         }
       } catch (e) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
+        Navigator.pop(context); // Close loading dialog
+
+        // Show error message
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                Icon(Icons.error, color: Colors.red, size: 28),
+                SizedBox(width: 8),
+                Text(
+                  "Error",
+                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            content: Text(
+              "An error occurred: $e",
+              style: GoogleFonts.poppins(fontSize: 16),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  "OK",
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.indigo,
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       }
     }
@@ -643,7 +989,7 @@ class _AddItemPageState extends State<AddItemPage> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
@@ -658,60 +1004,136 @@ class _AddItemPageState extends State<AddItemPage> with SingleTickerProviderStat
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Item Details",
-                    style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black87),
-                  ),
-                  SizedBox(height: 16),
-                  _buildDropdown("Active Flag", ["active", "inactive"], selectedActiveFlag, (value) => setState(() => selectedActiveFlag = value), Icons.toggle_on),
-                  SizedBox(height: 16),
-                  _buildDropdown("Manufacturer", ["Manufacturer A", "Manufacturer B"], selectedManufacturer, (value) => setState(() => selectedManufacturer = value), Icons.factory),
-                  SizedBox(height: 16),
-                  _buildTextField("Item Name", _nameController, Icons.inventory),
-                  SizedBox(height: 16),
-                  _buildTextField("Category", _categoryController, Icons.category),
-                  SizedBox(height: 16),
-                  _buildTextField("UOM ID", _uomController, Icons.code),
-                  SizedBox(height: 16),
-                  _buildTextField("Price", _priceController, Icons.attach_money),
-                  SizedBox(height: 16),
-                  _buildTextField("Batch Number", _batchNumberController, Icons.confirmation_number),
-                  SizedBox(height: 16),
-                  _buildTextField("Remaining Life", _remainingLifeController, Icons.timer),
-                  SizedBox(height: 16),
-                  _buildTextField("Usage", _usageController, Icons.history),
-                  SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () => _submitItem(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.grey[50]!, Colors.grey[100]!],
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.indigo.withOpacity(0.2)),
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.save_rounded, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text(
-                            "Save Item",
-                            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                          Icon(Icons.info_outline, color: Colors.indigo),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              "Fill in the details below to add a new item to inventory",
+                              style: GoogleFonts.poppins(fontSize: 14, color: Colors.indigo),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 24),
+                    Text(
+                      "Item Information",
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildTextField("Item Name", _nameController, Icons.inventory),
+                            SizedBox(height: 16),
+                            _buildTextField("Category", _categoryController, Icons.category),
+                            SizedBox(height: 16),
+                            _buildManufacturerDropdown(),
+                            SizedBox(height: 16),
+                            _buildActiveFlagDropdown(),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    Text(
+                      "Specifications",
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildTextField("UOM ID", _uomController, Icons.straighten),
+                            SizedBox(height: 16),
+                            _buildTextField("Price", _priceController, Icons.attach_money),
+                            SizedBox(height: 16),
+                            _buildTextField("Batch Number", _batchNumberController, Icons.confirmation_number),
+                            SizedBox(height: 16),
+                            _buildTextField("Remaining Life", _remainingLifeController, Icons.timer),
+                            SizedBox(height: 16),
+                            _buildTextField("Usage", _usageController, Icons.history),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _submitItem,
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.indigo,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 2,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.save_rounded, color: Colors.white),
+                            SizedBox(width: 12),
+                            Text(
+                              "Save Item",
+                              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),
@@ -721,3 +1143,30 @@ class _AddItemPageState extends State<AddItemPage> with SingleTickerProviderStat
   }
 }
 
+// String extension to capitalize first letter
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1)}";
+  }
+}
+
+// Manufacturer model class
+class Manufacturer {
+  final String id;
+  final String name;
+  final String contact;
+  final String email;
+  final String phone;
+  final String address;
+  final String category;
+
+  Manufacturer({
+    required this.id,
+    required this.name,
+    required this.contact,
+    required this.email,
+    required this.phone,
+    required this.address,
+    required this.category,
+  });
+}

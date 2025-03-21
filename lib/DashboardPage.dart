@@ -86,24 +86,22 @@ class _DashboardPageState extends State<DashboardPage> {
           onRefresh: _fetchDashboardData,
           child: SingleChildScrollView(
             physics: AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(MediaQuery.of(context).size.width > 600 ? 24.0 : 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(),
-                SizedBox(height: 32),
+                SizedBox(height: 24),
                 _isLoading
                     ? _buildLoadingStats()
                     : _hasError
                     ? _buildErrorStats()
                     : _buildStatCards(),
-                SizedBox(height: 32),
+                SizedBox(height: 24),
                 _buildMainGrid(context),
-                SizedBox(height: 32),
-                // 1) Recent Updates
+                SizedBox(height: 24),
                 _buildRecentUpdates(),
-                SizedBox(height: 32),
-                // 2) Critical Inventory Alert (added below Recent Updates)
+                SizedBox(height: 24),
                 _buildCriticalInventory(),
               ],
             ),
@@ -127,16 +125,34 @@ class _DashboardPageState extends State<DashboardPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        MediaQuery.of(context).size.width > 500
+            ? Row(
           children: [
             Text(
               "Welcome back, ",
-              style: TextStyle(fontSize: 28, color: Colors.black87),
+              style: TextStyle(fontSize: MediaQuery.of(context).size.width > 600 ? 28 : 22, color: Colors.black87),
             ),
             Text(
               "Admin!",
               style: TextStyle(
-                fontSize: 28,
+                fontSize: MediaQuery.of(context).size.width > 600 ? 28 : 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[700],
+              ),
+            ),
+          ],
+        )
+            : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Welcome back,",
+              style: TextStyle(fontSize: 22, color: Colors.black87),
+            ),
+            Text(
+              "Admin!",
+              style: TextStyle(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.blue[700],
               ),
@@ -146,21 +162,39 @@ class _DashboardPageState extends State<DashboardPage> {
         SizedBox(height: 8),
         Text(
           "Manage your inventory efficiently and track performance",
-          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         ),
       ],
     );
   }
 
   Widget _buildLoadingStats() {
-    return Row(
-      children: [
-        _buildLoadingStatCard(),
-        SizedBox(width: 16),
-        _buildLoadingStatCard(),
-        SizedBox(width: 16),
-        _buildLoadingStatCard(),
-      ].map((widget) => Expanded(child: widget)).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          // For mobile: Stack cards vertically
+          return Column(
+            children: [
+              _buildLoadingStatCard(),
+              SizedBox(height: 16),
+              _buildLoadingStatCard(),
+              SizedBox(height: 16),
+              _buildLoadingStatCard(),
+            ],
+          );
+        } else {
+          // For tablets and desktops: Place cards in a row
+          return Row(
+            children: [
+              _buildLoadingStatCard(),
+              SizedBox(width: 16),
+              _buildLoadingStatCard(),
+              SizedBox(width: 16),
+              _buildLoadingStatCard(),
+            ].map((widget) => Expanded(child: widget)).toList(),
+          );
+        }
+      },
     );
   }
 
@@ -226,32 +260,68 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildErrorStats() {
-    return Row(
-      children: [
-        _buildStatCard(
-          "Available Items",
-          "0",
-          "N/A",
-          Colors.blue[700]!,
-          Icons.inventory_2_outlined,
-        ),
-        SizedBox(width: 16),
-        _buildStatCard(
-          "Issued Items",
-          "0",
-          "N/A",
-          Colors.green[700]!,
-          Icons.local_shipping_outlined,
-        ),
-        SizedBox(width: 16),
-        _buildStatCard(
-          "Reserved Items",
-          "0",
-          "N/A",
-          Colors.orange[700]!,
-          Icons.pending_actions_outlined,
-        ),
-      ].map((widget) => Expanded(child: widget)).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          // For mobile: Stack cards vertically
+          return Column(
+            children: [
+              _buildStatCard(
+                "Available Items",
+                "0",
+                "N/A",
+                Colors.blue[700]!,
+                Icons.inventory_2_outlined,
+              ),
+              SizedBox(height: 16),
+              _buildStatCard(
+                "Issued Items",
+                "0",
+                "N/A",
+                Colors.green[700]!,
+                Icons.local_shipping_outlined,
+              ),
+              SizedBox(height: 16),
+              _buildStatCard(
+                "Reserved Items",
+                "0",
+                "N/A",
+                Colors.orange[700]!,
+                Icons.pending_actions_outlined,
+              ),
+            ],
+          );
+        } else {
+          // For tablets and desktops: Place cards in a row
+          return Row(
+            children: [
+              _buildStatCard(
+                "Available Items",
+                "0",
+                "N/A",
+                Colors.blue[700]!,
+                Icons.inventory_2_outlined,
+              ),
+              SizedBox(width: 16),
+              _buildStatCard(
+                "Issued Items",
+                "0",
+                "N/A",
+                Colors.green[700]!,
+                Icons.local_shipping_outlined,
+              ),
+              SizedBox(width: 16),
+              _buildStatCard(
+                "Reserved Items",
+                "0",
+                "N/A",
+                Colors.orange[700]!,
+                Icons.pending_actions_outlined,
+              ),
+            ].map((widget) => Expanded(child: widget)).toList(),
+          );
+        }
+      },
     );
   }
 
@@ -266,32 +336,68 @@ class _DashboardPageState extends State<DashboardPage> {
     final issuedTrend = "+3.1%";
     final reservedTrend = "-2.4%";
 
-    return Row(
-      children: [
-        _buildStatCard(
-          "Available Items",
-          availableCount,
-          availableTrend,
-          Colors.blue[700]!,
-          Icons.inventory_2_outlined,
-        ),
-        SizedBox(width: 16),
-        _buildStatCard(
-          "Issued Items",
-          issuedCount,
-          issuedTrend,
-          Colors.green[700]!,
-          Icons.local_shipping_outlined,
-        ),
-        SizedBox(width: 16),
-        _buildStatCard(
-          "Reserved Items",
-          reservedCount,
-          reservedTrend,
-          Colors.orange[700]!,
-          Icons.pending_actions_outlined,
-        ),
-      ].map((widget) => Expanded(child: widget)).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          // For mobile: Stack cards vertically
+          return Column(
+            children: [
+              _buildStatCard(
+                "Available Items",
+                availableCount,
+                availableTrend,
+                Colors.blue[700]!,
+                Icons.inventory_2_outlined,
+              ),
+              SizedBox(height: 16),
+              _buildStatCard(
+                "Issued Items",
+                issuedCount,
+                issuedTrend,
+                Colors.green[700]!,
+                Icons.local_shipping_outlined,
+              ),
+              SizedBox(height: 16),
+              _buildStatCard(
+                "Reserved Items",
+                reservedCount,
+                reservedTrend,
+                Colors.orange[700]!,
+                Icons.pending_actions_outlined,
+              ),
+            ],
+          );
+        } else {
+          // For tablets and desktops: Place cards in a row
+          return Row(
+            children: [
+              _buildStatCard(
+                "Available Items",
+                availableCount,
+                availableTrend,
+                Colors.blue[700]!,
+                Icons.inventory_2_outlined,
+              ),
+              SizedBox(width: 16),
+              _buildStatCard(
+                "Issued Items",
+                issuedCount,
+                issuedTrend,
+                Colors.green[700]!,
+                Icons.local_shipping_outlined,
+              ),
+              SizedBox(width: 16),
+              _buildStatCard(
+                "Reserved Items",
+                reservedCount,
+                reservedTrend,
+                Colors.orange[700]!,
+                Icons.pending_actions_outlined,
+              ),
+            ].map((widget) => Expanded(child: widget)).toList(),
+          );
+        }
+      },
     );
   }
 
@@ -404,28 +510,71 @@ class _DashboardPageState extends State<DashboardPage> {
             separatorBuilder: (context, index) => Divider(height: 1),
             itemBuilder: (context, index) {
               final update = recentUpdates[index];
-              return ListTile(
-                title: Text('Item ID: ${update['item_id']}'),
-                subtitle: Text('Updated: ${update['updated_at']}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildStatusChip('Qty: ${update['quantity']}', Colors.blue),
-                    SizedBox(width: 8),
-                    _buildStatusChip('Reserved: ${update['reserved']}', Colors.orange),
-                    SizedBox(width: 8),
-                    _buildStatusChip('Issued: ${update['issued']}', Colors.green),
-                  ],
-                ),
-                onTap: () {
-                  // Navigate to item details
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ItemDetailsPage(itemId: update['item_id']),
-                    ),
-                  );
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 600) {
+                    // Mobile layout - stack vertically
+                    return Container(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Item ID: ${update['item_id']}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Updated: ${update['updated_at']}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              _buildStatusChip('Qty: ${update['quantity']}', Colors.blue),
+                              _buildStatusChip('Reserved: ${update['reserved']}', Colors.orange),
+                              _buildStatusChip('Issued: ${update['issued']}', Colors.green),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    // Desktop layout - standard ListTile
+                    return ListTile(
+                      title: Text('Item ID: ${update['item_id']}'),
+                      subtitle: Text('Updated: ${update['updated_at']}'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildStatusChip('Qty: ${update['quantity']}', Colors.blue),
+                          SizedBox(width: 8),
+                          _buildStatusChip('Reserved: ${update['reserved']}', Colors.orange),
+                          SizedBox(width: 8),
+                          _buildStatusChip('Issued: ${update['issued']}', Colors.green),
+                        ],
+                      ),
+                      onTap: () {
+                        // Navigate to item details
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) =>
+                        //         ItemDetailsPage(itemId:int.tryParse(update['item_id'].toString()) ?? 0
+                        //         ),
+                        //   ),
+                        // );
+                      },
+                    );
+                  }
                 },
               );
             },
@@ -626,14 +775,23 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 1200 ? 4 : 2;
+        // Dynamic grid based on screen width
+        int crossAxisCount;
+        if (constraints.maxWidth < 600) {
+          crossAxisCount = 1; // Mobile: 1 column
+        } else if (constraints.maxWidth < 900) {
+          crossAxisCount = 2; // Tablet: 2 columns
+        } else {
+          crossAxisCount = 4; // Desktop: 4 columns
+        }
+
         return GridView.count(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           crossAxisCount: crossAxisCount,
-          crossAxisSpacing: 24,
-          mainAxisSpacing: 24,
-          childAspectRatio: 1.2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: constraints.maxWidth < 600 ? 1.5 : 1.2,
           children: cards,
         );
       },
@@ -670,17 +828,19 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           child: Stack(
             children: [
-              Positioned(
-                right: -20,
-                top: -20,
-                child: Icon(
-                  icon,
-                  size: 100,
-                  color: color[50],
+              // Hide the background icon on small screens
+              if (MediaQuery.of(context).size.width > 500)
+                Positioned(
+                  right: -20,
+                  top: -20,
+                  child: Icon(
+                    icon,
+                    size: 100,
+                    color: color[50],
+                  ),
                 ),
-              ),
               Padding(
-                padding: EdgeInsets.all(24),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -696,7 +856,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -735,57 +895,53 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // NEW METHODS: Critical Inventory Alert and the helper widget _criticalItem()
-  // ---------------------------------------------------------------------------
   Widget _buildCriticalInventory() {
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Critical Inventory Alert",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Critical Inventory Alert",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[800],
           ),
-          SizedBox(height: 16),
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.red.withOpacity(0.3),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 5,
-                  offset: Offset(0, 2),
-                ),
-              ],
+        ),
+        SizedBox(height: 16),
+        Container(
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.red.withOpacity(0.3),
             ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.warning_amber_rounded,
-                        color: Colors.red,
-                      ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 5,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                    SizedBox(width: 12),
-                    Column(
+                    child: Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.red,
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -805,32 +961,112 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ],
                     ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                // Hardcoded examples; replace with real data/API logic as desired
-                _criticalItem("Infusion Pumps", "2 remaining", 20, 2),
-                SizedBox(height: 10),
-                _criticalItem("Pulse Oximeters", "3 remaining", 15, 3),
-                SizedBox(height: 10),
-                _criticalItem("Stethoscopes", "4 remaining", 25, 4),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    // TODO: Add your "Order Supplies" logic
-                  },
-                  child: Text("Order Supplies"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF2E7D32),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    minimumSize: Size(double.infinity, 0),
                   ),
+                ],
+              ),
+              SizedBox(height: 16),
+              _buildCriticalItemsList(),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  // TODO: Add your "Order Supplies" logic
+                },
+                child: Text("Order Supplies"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF2E7D32),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  minimumSize: Size(double.infinity, 0),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCriticalItemsList() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 500) {
+          // Mobile version - stack items vertically
+          return Column(
+            children: [
+              _buildCriticalItemMobile("Infusion Pumps", "2 remaining", 20, 2),
+              SizedBox(height: 12),
+              _buildCriticalItemMobile("Pulse Oximeters", "3 remaining", 15, 3),
+              SizedBox(height: 12),
+              _buildCriticalItemMobile("Stethoscopes", "4 remaining", 25, 4),
+            ],
+          );
+        } else {
+          // Desktop version - row layout
+          return Column(
+            children: [
+              _criticalItem("Infusion Pumps", "2 remaining", 20, 2),
+              SizedBox(height: 10),
+              _criticalItem("Pulse Oximeters", "3 remaining", 15, 3),
+              SizedBox(height: 10),
+              _criticalItem("Stethoscopes", "4 remaining", 25, 4),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildCriticalItemMobile(String name, String count, int total, int remaining) {
+    double percentage = remaining / total;
+
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                name,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                count,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Stack(
+            children: [
+              Container(
+                height: 8,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Container(
+                height: 8,
+                width: MediaQuery.of(context).size.width * percentage * 0.6, // Adjust width based on screen size
+                decoration: BoxDecoration(
+                  color: percentage < 0.3 ? Colors.red : Colors.orange,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -841,53 +1077,55 @@ class _DashboardPageState extends State<DashboardPage> {
     double percentage = remaining / total;
 
     return Row(
-      children: [
+        children: [
         Expanded(
-          flex: 3,
-          child: Text(
-            name,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+        flex: 3,
+        child: Text(
+        name,
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
         ),
-        Expanded(
-          flex: 2,
-          child: Text(
-            count,
-            style: TextStyle(
-              color: Colors.grey[600],
-            ),
-          ),
         ),
-        Expanded(
-          flex: 5,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                  Container(
-                    height: 6,
-                    width: 100 * percentage,
-                    decoration: BoxDecoration(
-                      color: percentage < 0.3 ? Colors.red : Colors.orange,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                ],
+        ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              count,
+              style: TextStyle(
+                color: Colors.grey[600],
               ),
-            ],
+            ),
           ),
-        ),
-      ],
+          Expanded(
+            flex: 5,
+            child: Stack(
+              children: [
+                Container(
+                  height: 8,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                Container(
+                  height: 8,
+                  width: MediaQuery.of(context).size.width * percentage * 0.2, // Adjust based on parent width
+                  decoration: BoxDecoration(
+                    color: percentage < 0.3 ? Colors.red : Colors.orange,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
     );
   }
 }
+
+
+
+
+
+

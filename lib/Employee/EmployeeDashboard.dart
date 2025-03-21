@@ -5,6 +5,7 @@ import 'package:hospital_inventory_management/Employee/MedicalDashboard Function
 import 'package:hospital_inventory_management/Employee/MedicalDashboard Functions/EquipmentStatusPage.dart';
 import '../LoginPage.dart';
 import '../main.dart';
+import '../models/user_model.dart';
 import 'Pages/Camera_In_Controller.dart';
 
 enum RequestStatus {
@@ -33,13 +34,13 @@ class MedicalDashboard extends StatelessWidget {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () => _showNotifications(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => _showProfile(context),
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.person_outline),
+          //   onPressed: () => _showProfile(context),
+          // ),
         ],
       ),
-      drawer: _buildDrawer(context),
+      // drawer: _buildDrawer(context),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -53,7 +54,7 @@ class MedicalDashboard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildStaffHeader(),
+              // _buildStaffHeader(),
               _buildEquipmentSummary(),
               _buildQuickActions(context),
               _buildActiveRequests(),
@@ -80,74 +81,74 @@ class MedicalDashboard extends StatelessWidget {
   // -------------------------------------------------------------
   // Drawer
   // -------------------------------------------------------------
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          // Drawer Header
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 36,
-                  backgroundColor: Colors.white,
-                  child: Text(
-                    user.name[0],
-                    style: const TextStyle(
-                      fontSize: 30,
-                      color: Color(0xFF2E7D32),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  user.department,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _drawerItem(Icons.dashboard_outlined, "Dashboard"),
-          _drawerItem(Icons.medical_services_outlined, "Equipment Catalog"),
-          _drawerItem(Icons.history_outlined, "Request History"),
-          _drawerItem(Icons.analytics_outlined, "Usage Analytics"),
-          _drawerItem(Icons.support_outlined, "Support"),
-          const Divider(),
-          _drawerItem(Icons.settings_outlined, "Settings"),
-          _drawerItem(Icons.help_outline, "Help & FAQ"),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text("Logout"),
-            onTap: () {
-              Navigator.pop(context);
-              // e.g. Navigator.pushReplacementNamed(context, '/login');
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildDrawer(BuildContext context) {
+  //   return Drawer(
+  //     child: ListView(
+  //       padding: EdgeInsets.zero,
+  //       children: [
+  //         // Drawer Header
+  //         DrawerHeader(
+  //           decoration: const BoxDecoration(
+  //             gradient: LinearGradient(
+  //               begin: Alignment.topLeft,
+  //               end: Alignment.bottomRight,
+  //               colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+  //             ),
+  //           ),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               CircleAvatar(
+  //                 radius: 36,
+  //                 backgroundColor: Colors.white,
+  //                 child: Text(
+  //                   user.name[0],
+  //                   style: const TextStyle(
+  //                     fontSize: 30,
+  //                     color: Color(0xFF2E7D32),
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 10),
+  //               Text(
+  //                 user.name,
+  //                 style: const TextStyle(
+  //                   color: Colors.white,
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //               Text(
+  //                 user.department,
+  //                 style: const TextStyle(
+  //                   color: Colors.white70,
+  //                   fontSize: 14,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         _drawerItem(Icons.dashboard_outlined, "Dashboard"),
+  //         _drawerItem(Icons.medical_services_outlined, "Equipment Catalog"),
+  //         _drawerItem(Icons.history_outlined, "Request History"),
+  //         _drawerItem(Icons.analytics_outlined, "Usage Analytics"),
+  //         _drawerItem(Icons.support_outlined, "Support"),
+  //         const Divider(),
+  //         _drawerItem(Icons.settings_outlined, "Settings"),
+  //         _drawerItem(Icons.help_outline, "Help & FAQ"),
+  //         ListTile(
+  //           leading: const Icon(Icons.logout),
+  //           title: const Text("Logout"),
+  //           onTap: () {
+  //             Navigator.pop(context);
+  //             // e.g. Navigator.pushReplacementNamed(context, '/login');
+  //           },
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _drawerItem(IconData icon, String title) {
     return ListTile(
@@ -160,55 +161,55 @@ class MedicalDashboard extends StatelessWidget {
   // -------------------------------------------------------------
   // Staff Header
   // -------------------------------------------------------------
-  Widget _buildStaffHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.medical_services,
-                color: Colors.white,
-                size: 28,
-              ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Hello, Dr. ${user.name.split(' ')[0]}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${user.department} • Staff ID: ${user.employeeId}",
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "Monday, February 24, 2025", // or dynamic date
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildStaffHeader() {
+  //   return Container(
+  //     padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             const Icon(
+  //               Icons.medical_services,
+  //               color: Colors.white,
+  //               size: 28,
+  //             ),
+  //             const SizedBox(width: 14),
+  //             Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   "Hello, Dr. ${user.name.split(' ')[0]}",
+  //                   style: const TextStyle(
+  //                     color: Colors.white,
+  //                     fontSize: 24,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 4),
+  //                 Text(
+  //                   "${user.department} • Staff ID: ${user.employeeId}",
+  //                   style: TextStyle(
+  //                     color: Colors.white.withOpacity(0.8),
+  //                     fontSize: 14,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 20),
+  //         Text(
+  //           "Monday, February 24, 2025", // or dynamic date
+  //           style: TextStyle(
+  //             color: Colors.white.withOpacity(0.9),
+  //             fontSize: 14,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // -------------------------------------------------------------
   // Equipment Summary
@@ -908,130 +909,130 @@ class MedicalDashboard extends StatelessWidget {
   // -------------------------------------------------------------
   // Profile (Placeholder)
   // -------------------------------------------------------------
-  void _showProfile(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Example avatar
-            Container(
-              width: 100,
-              height: 100,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  user.name[0],
-                  style: const TextStyle(
-                    fontSize: 40,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              user.name,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              user.email,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2E7D32).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFF2E7D32).withOpacity(0.3),
-                ),
-              ),
-              child: Text(
-                user.department,
-                style: const TextStyle(
-                  color: Color(0xFF2E7D32),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _profileStatItem("Requests", "24"),
-                  _profileStatItem("Active", "7"),
-                  _profileStatItem("Returned", "17"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: Color(0xFF2E7D32)),
-                    ),
-                    child: const Text("Edit Profile"),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // e.g. Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text("Logout"),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // void _showProfile(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (context) => Container(
+  //       padding: const EdgeInsets.all(20),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           // Example avatar
+  //           Container(
+  //             width: 100,
+  //             height: 100,
+  //             decoration: const BoxDecoration(
+  //               shape: BoxShape.circle,
+  //               gradient: LinearGradient(
+  //                 begin: Alignment.topLeft,
+  //                 end: Alignment.bottomRight,
+  //                 colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+  //               ),
+  //             ),
+  //             child: Center(
+  //               child: Text(
+  //                 user.name[0],
+  //                 style: const TextStyle(
+  //                   fontSize: 40,
+  //                   color: Colors.white,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //           const SizedBox(height: 16),
+  //           Text(
+  //             user,
+  //             style: const TextStyle(
+  //               fontSize: 24,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //           const SizedBox(height: 8),
+  //           Text(
+  //             user.email,
+  //             style: TextStyle(
+  //               fontSize: 16,
+  //               color: Colors.grey[600],
+  //             ),
+  //           ),
+  //           const SizedBox(height: 8),
+  //           Container(
+  //             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+  //             decoration: BoxDecoration(
+  //               color: const Color(0xFF2E7D32).withOpacity(0.1),
+  //               borderRadius: BorderRadius.circular(20),
+  //               border: Border.all(
+  //                 color: const Color(0xFF2E7D32).withOpacity(0.3),
+  //               ),
+  //             ),
+  //             child: Text(
+  //               user.department,
+  //               style: const TextStyle(
+  //                 color: Color(0xFF2E7D32),
+  //                 fontWeight: FontWeight.w500,
+  //               ),
+  //             ),
+  //           ),
+  //           const SizedBox(height: 16),
+  //           Container(
+  //             padding: const EdgeInsets.all(16),
+  //             decoration: BoxDecoration(
+  //               color: Colors.grey[100],
+  //               borderRadius: BorderRadius.circular(12),
+  //             ),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //               children: [
+  //                 _profileStatItem("Requests", "24"),
+  //                 _profileStatItem("Active", "7"),
+  //                 _profileStatItem("Returned", "17"),
+  //               ],
+  //             ),
+  //           ),
+  //           const SizedBox(height: 20),
+  //           Row(
+  //             children: [
+  //               Expanded(
+  //                 child: OutlinedButton(
+  //                   onPressed: () {},
+  //                   style: OutlinedButton.styleFrom(
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(12),
+  //                     ),
+  //                     padding: const EdgeInsets.symmetric(vertical: 12),
+  //                     side: const BorderSide(color: Color(0xFF2E7D32)),
+  //                   ),
+  //                   child: const Text("Edit Profile"),
+  //                 ),
+  //               ),
+  //               const SizedBox(width: 12),
+  //               Expanded(
+  //                 child: ElevatedButton(
+  //                   onPressed: () {
+  //                     Navigator.pop(context);
+  //                     // e.g. Navigator.pushReplacementNamed(context, '/login');
+  //                   },
+  //                   style: ElevatedButton.styleFrom(
+  //                     backgroundColor: const Color(0xFF2E7D32),
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(12),
+  //                     ),
+  //                     padding: const EdgeInsets.symmetric(vertical: 12),
+  //                   ),
+  //                   child: const Text("Logout"),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _profileStatItem(String label, String value) {
     return Column(

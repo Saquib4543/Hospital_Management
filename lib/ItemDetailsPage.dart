@@ -6,14 +6,13 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class ItemDetailsPage extends StatefulWidget {
-  final String itemId;
+  final int itemId;
 
   const ItemDetailsPage({Key? key, required this.itemId}) : super(key: key);
 
   @override
   _ItemDetailsPageState createState() => _ItemDetailsPageState();
 }
-
 class _ItemDetailsPageState extends State<ItemDetailsPage> {
   Map<String, dynamic>? item;
   bool isLoading = true;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../models/user_model.dart';
 
 class ReturnEquipmentPage extends StatelessWidget {
   final User user;

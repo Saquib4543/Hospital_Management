@@ -1,30 +1,75 @@
 import 'package:flutter/material.dart';
-import 'package:hospital_inventory_management/LoginPage.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'Auth/Approutes.dart';
+import 'Auth/AuthService.dart';
 
-import 'DashboardPage.dart';
-import 'Employee/EmployeeDashboard.dart';
-import 'ItemDetailsPage.dart';
 
-void main() {
-  SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(statusBarColor: Colors.transparent),
-  );
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      primarySwatch: Colors.blue,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        filled: true,
-        fillColor: Colors.grey[100],
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init(); // Initialize GetStorage
+
+  // Initialize AuthService before starting the app
+  await Get.putAsync(() => AuthService().init());
+
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      title: 'Inventory Management',
+      debugShowCheckedModeBanner: false,
+      theme: _lightTheme(),
+      darkTheme: _darkTheme(),
+      themeMode: ThemeMode.system,
+      initialRoute: '/',
+      getPages: AppRoutes.routes,
+    );
+  }
+
+  // Light Theme
+  ThemeData _lightTheme() {
+    return ThemeData.light().copyWith(
+      primaryColor: Color(0xFF3B7AF5),
+      colorScheme: ColorScheme.light(
+        primary: Color(0xFF3B7AF5),
+        secondary: Color(0xFF1E4EC7),
       ),
-    ),
-  home: LoginPage(
-  ),
-  ));
+      appBarTheme: AppBarTheme(
+        backgroundColor: Color(0xFF3B7AF5),
+        elevation: 0,
+      ),
+    );
+  }
+
+  // Dark Theme
+  ThemeData _darkTheme() {
+    return ThemeData.dark().copyWith(
+      primaryColor: Color(0xFF3B7AF5),
+      scaffoldBackgroundColor: Color(0xFF1E1E2C),
+      cardColor: Color(0xFF21213A),
+      colorScheme: ColorScheme.dark(
+        primary: Color(0xFF3B7AF5),
+        secondary: Color(0xFF1E4EC7),
+        surface: Color(0xFF21213A),
+        background: Color(0xFF1E1E2C),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Color(0xFF21213A),
+        elevation: 0,
+      ),
+    );
+  }
+}
+
+// Extension to initialize AuthService
+extension AuthServiceExtension on AuthService {
+  Future<AuthService> init() async {
+    await checkAuthStatus();
+    return this;
+  }
 }
 
 // Data Models
@@ -64,23 +109,6 @@ enum UserRole {
   employee
 }
 
-class User {
-  final String id;
-  final String name;
-  final String email;
-  final String department;
-  final UserRole role;
-  final String employeeId;
-
-  User({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.department,
-    required this.role,
-    required this.employeeId,
-  });
-}
 
 class EquipmentRequest {
   final String id;
@@ -108,24 +136,3 @@ class EquipmentRequest {
 
 
 // Add this to the login page to handle role-based navigation
-void _handleLogin(BuildContext context, UserRole role) {
-  if (role == UserRole.admin) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => DashboardPage()),
-    );
-  } else {
-    final user = User(
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      department: "IT",
-      role: UserRole.employee,
-      employeeId: "EMP001",
-    );
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MedicalDashboard(user: user)),
-    );
-  }
-}

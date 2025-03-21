@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:hospital_inventory_management/Employee/Pages/DropDown_Option.dart';
 import 'package:hospital_inventory_management/main.dart';
 
+import '../../models/user_model.dart';
+
 class EquipmentStatusPage extends StatefulWidget {
   final User user;
 

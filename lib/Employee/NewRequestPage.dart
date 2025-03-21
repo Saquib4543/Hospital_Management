@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../models/user_model.dart';
 
 class NewRequestPage extends StatefulWidget {
   final User user;

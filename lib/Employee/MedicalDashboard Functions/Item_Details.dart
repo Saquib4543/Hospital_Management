@@ -1,14 +1,13 @@
 class Item_Details {
-  final String id;
-  final String name;
-  final String description;
-  final String issuanceStatus;
-  final String locationId;
-  final String requestNumber;
-
-  // Add these fields
-  final String activeFlag;
-  final String userLocation;
+  // Make these fields non-final so we can assign them after creation
+  String id;
+  String name;
+  String description;
+  String issuanceStatus;
+  String locationId;
+  String requestNumber;
+  String activeFlag;
+  String userLocation;
 
   Item_Details({
     required this.id,
@@ -21,9 +20,10 @@ class Item_Details {
     required this.userLocation,
   });
 
+  /// IMPORTANT: Read 'qr_id' from JSON, not 'id'.
   factory Item_Details.fromJson(Map<String, dynamic> json) {
     return Item_Details(
-      id: json['id'] ?? '',
+      id: json['qr_id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       issuanceStatus: json['issuance_status'] ?? '',

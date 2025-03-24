@@ -8,6 +8,7 @@ import 'item_details.dart';
 enum EquipmentAction {
   none,
   take,
+  reserve,
   submit,
 }
 
@@ -22,39 +23,41 @@ class EquipmentDisplay extends StatefulWidget {
 }
 
 class _EquipmentDisplayState extends State<EquipmentDisplay> {
+  // All scanned items
   late List<Item_Details> allItems;
+  // Whether each item is selected (indexed by allItems)
   late List<bool> isSelected;
 
+  // The user’s current chosen action
   EquipmentAction selectedAction = EquipmentAction.none;
 
-  // TAKE
-  bool isRequest = true; // true => "Issued", false => "Reserved"
-  DateTime? takeFromDate;
-  DateTime? takeToDate;
+  // TAKE / RESERVE
+  DateTime? fromDate;
+  DateTime? toDate;
   final TextEditingController purposeController = TextEditingController();
+  final TextEditingController userLocationController = TextEditingController();
 
   // SUBMIT
   final TextEditingController conditionController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
   bool needsMaintenance = false;
 
-  // Manually enter location
-  final TextEditingController userLocationController = TextEditingController();
-
   final String currentUserId = "john.doe@hospital.com";
-
+  final String referenceId = "eba1b267-d8e5-4778-8bfd-f3a1917b66f4"; // example
   final _serverDateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
 
   @override
   void initState() {
     super.initState();
+    // Copy scannedItems into allItems
     allItems = List.from(widget.scannedItems);
-    // By default, each item is selected
-    isSelected = List.generate(allItems.length, (_) => true);
+    // Initially, no items selected
+    isSelected = List.generate(allItems.length, (_) => false);
   }
 
-  // ----------------- Bulk Update API -----------------
-  Future<void> _updateItemsInBulk({
+  // ----------------- API: Bulk Update -----------------
+  /// Returns the `http.Response` so each action can handle success/fail status.
+  Future<http.Response?> _updateItemsInBulk({
     required String referenceId,
     required List<Map<String, dynamic>> itemsData,
   }) async {
@@ -72,60 +75,52 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
         headers: {'Content-Type': 'application/json'},
         body: body,
       );
-
       debugPrint('** Response status: ${response.statusCode}');
       debugPrint('** Response body: ${response.body}');
-      if (response.statusCode == 200) {
-        debugPrint('Success!');
-      } else {
-        debugPrint('Error ${response.statusCode}: ${response.body}');
-      }
+      return response;
     } catch (e) {
-      debugPrint('Exception: $e');
+      debugPrint('Exception (API call): $e');
+      return null; // indicates an exception/failure
     }
   }
 
-  // Helper: show snack bar for validations
-  void _showValidationError(String message) {
+  // Helper: show snack bar for validations or statuses
+  void _showSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
-  // ----------------- TAKE (ISSUED/RESERVED) -----------------
+  // ----------------- TAKE → Issued -----------------
   Future<void> _submitTakeEquipment() async {
-    // Validate required fields
-    if (takeFromDate == null || takeToDate == null) {
-      _showValidationError("Please select both From and To dates.");
+    // Validate fields
+    if (fromDate == null || toDate == null) {
+      _showSnackbar("Please select both From and To dates.");
       return;
     }
     if (purposeController.text.trim().isEmpty) {
-      _showValidationError("Please enter the purpose.");
+      _showSnackbar("Please enter the purpose.");
       return;
     }
     if (userLocationController.text.trim().isEmpty) {
-      _showValidationError("Please enter the user location.");
+      _showSnackbar("Please enter the user location.");
       return;
     }
 
-    final String referenceId = "eba1b267-d8e5-4778-8bfd-f3a1917b66f4";
-    final selectedItems = <Item_Details>[];
-
-    for (int i = 0; i < allItems.length; i++) {
-      if (isSelected[i] &&
-          !_isCheckboxDisabled(allItems[i], EquipmentAction.take)) {
-        selectedItems.add(allItems[i]);
-      }
+    // Gather selected items
+    final selectedItems = _getDisplayedItems().where((item) {
+      final idx = allItems.indexOf(item);
+      return isSelected[idx];
+    }).toList();
+    if (selectedItems.isEmpty) {
+      _showSnackbar("No items selected to take.");
+      return;
     }
 
-    final String newStatus = isRequest ? 'Issued' : 'Reserved';
-    final String fromDateStr = _serverDateFormat.format(takeFromDate!);
-    final String toDateStr = _serverDateFormat.format(takeToDate!);
-
+    final String newStatus = 'Issued';
+    final String fromDateStr = _serverDateFormat.format(fromDate!);
+    final String toDateStr = _serverDateFormat.format(toDate!);
     final userLocation = userLocationController.text.trim();
-
-    debugPrint(
-        '** _submitTakeEquipment => $newStatus, count=${selectedItems.length}');
 
     final List<Map<String, dynamic>> itemsData = [];
     for (final item in selectedItems) {
@@ -134,57 +129,150 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
         "from_date": fromDateStr,
         "to_date": toDateStr,
         "user_location": userLocation,
-        "qr_id": item.id,
+        "qr_id": item.id, // ensuring qr_id is passed
       });
     }
 
-    await _updateItemsInBulk(referenceId: referenceId, itemsData: itemsData);
-
-    final itemsSummary = selectedItems
-        .map((item) => '${item.name} (qr: ${item.id}, loc: $userLocation)')
-        .join('\n');
-
-    _showEnhancedDialog(
-      "Equipment Take",
-      "Type: $newStatus\n"
-          "From: $fromDateStr\n"
-          "To: $toDateStr\n"
-          "Purpose: ${purposeController.text}\n"
-          "User Location: $userLocation\n\n"
-          "Items:\n$itemsSummary",
+    // Call the API
+    final response = await _updateItemsInBulk(
+      referenceId: referenceId,
+      itemsData: itemsData,
     );
+
+    if (response == null) {
+      // Exception
+      _showSnackbar("Failed to submit data (network error).");
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      // Show success snack bar
+      _showSnackbar("Successfully submitted data!");
+
+      // Show summary in dialog
+      final itemsSummary = selectedItems
+          .map((item) => '${item.name} (QR: ${item.id}, loc: $userLocation)')
+          .join('\n');
+
+      _showEnhancedDialog(
+        "Equipment Take",
+        "Status: $newStatus\n"
+            "From: $fromDateStr\n"
+            "To: $toDateStr\n"
+            "Purpose: ${purposeController.text}\n"
+            "User Location: $userLocation\n\n"
+            "Items:\n$itemsSummary",
+      );
+    } else {
+      // Show failure snack bar
+      _showSnackbar("Failed to submit data. Status: ${response.statusCode}");
+    }
   }
 
-  // ----------------- SUBMIT (RETURN -> AVAILABLE) -----------------
-  Future<void> _submitSubmitEquipment() async {
+  // ----------------- RESERVE → Reserved -----------------
+  Future<void> _submitReserveEquipment() async {
     // Validate fields
-    if (conditionController.text.trim().isEmpty) {
-      _showValidationError("Please enter the equipment condition.");
+    if (fromDate == null || toDate == null) {
+      _showSnackbar("Please select both From and To dates.");
+      return;
+    }
+    if (purposeController.text.trim().isEmpty) {
+      _showSnackbar("Please enter the purpose.");
       return;
     }
     if (userLocationController.text.trim().isEmpty) {
-      _showValidationError("Please enter the user location.");
+      _showSnackbar("Please enter the user location.");
       return;
     }
 
-    final String referenceId = "eba1b267-d8e5-4778-8bfd-f3a1917b66f4";
-    final selectedItems = <Item_Details>[];
+    // Gather selected items
+    final selectedItems = _getDisplayedItems().where((item) {
+      final idx = allItems.indexOf(item);
+      return isSelected[idx];
+    }).toList();
+    if (selectedItems.isEmpty) {
+      _showSnackbar("No items selected to reserve.");
+      return;
+    }
 
-    for (int i = 0; i < allItems.length; i++) {
-      if (isSelected[i] &&
-          !_isCheckboxDisabled(allItems[i], EquipmentAction.submit)) {
-        selectedItems.add(allItems[i]);
-      }
+    final String newStatus = 'Reserved';
+    final String fromDateStr = _serverDateFormat.format(fromDate!);
+    final String toDateStr = _serverDateFormat.format(toDate!);
+    final userLocation = userLocationController.text.trim();
+
+    final List<Map<String, dynamic>> itemsData = [];
+    for (final item in selectedItems) {
+      itemsData.add({
+        "issuance_status": newStatus,
+        "from_date": fromDateStr,
+        "to_date": toDateStr,
+        "user_location": userLocation,
+        "qr_id": item.id, // ensuring qr_id is passed
+      });
+    }
+
+    // Call the API
+    final response = await _updateItemsInBulk(
+      referenceId: referenceId,
+      itemsData: itemsData,
+    );
+
+    if (response == null) {
+      // Exception
+      _showSnackbar("Failed to submit data (network error).");
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      // Show success snack bar
+      _showSnackbar("Successfully submitted data!");
+
+      // Show summary in dialog
+      final itemsSummary = selectedItems
+          .map((item) => '${item.name} (QR: ${item.id}, loc: $userLocation)')
+          .join('\n');
+
+      _showEnhancedDialog(
+        "Equipment Reserve",
+        "Status: $newStatus\n"
+            "From: $fromDateStr\n"
+            "To: $toDateStr\n"
+            "Purpose: ${purposeController.text}\n"
+            "User Location: $userLocation\n\n"
+            "Items:\n$itemsSummary",
+      );
+    } else {
+      // Show failure snack bar
+      _showSnackbar("Failed to submit data. Status: ${response.statusCode}");
+    }
+  }
+
+  // ----------------- SUBMIT → Available -----------------
+  Future<void> _submitSubmitEquipment() async {
+    // Validate fields
+    if (conditionController.text.trim().isEmpty) {
+      _showSnackbar("Please enter the equipment condition.");
+      return;
+    }
+    if (userLocationController.text.trim().isEmpty) {
+      _showSnackbar("Please enter the user location.");
+      return;
+    }
+
+    // Gather selected items
+    final selectedItems = _getDisplayedItems().where((item) {
+      final idx = allItems.indexOf(item);
+      return isSelected[idx];
+    }).toList();
+    if (selectedItems.isEmpty) {
+      _showSnackbar("No items selected to submit/return.");
+      return;
     }
 
     const String newStatus = 'Available';
     const String fromDateStr = "";
     const String toDateStr = "";
-
     final userLocation = userLocationController.text.trim();
-
-    debugPrint(
-        '** _submitSubmitEquipment => $newStatus, count=${selectedItems.length}');
 
     final List<Map<String, dynamic>> itemsData = [];
     for (final item in selectedItems) {
@@ -193,27 +281,46 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
         "from_date": fromDateStr,
         "to_date": toDateStr,
         "user_location": userLocation,
-        "qr_id": item.id,
+        "qr_id": item.id, // ensuring qr_id is passed
       });
     }
 
-    await _updateItemsInBulk(referenceId: referenceId, itemsData: itemsData);
-
-    final itemsSummary = selectedItems
-        .map((item) => '${item.name} (qr: ${item.id}, loc: $userLocation)')
-        .join('\n');
-
-    _showEnhancedDialog(
-      "Equipment Return",
-      "Condition: ${conditionController.text}\n"
-          "Notes/Issues: ${notesController.text}\n"
-          "Needs Maintenance: ${needsMaintenance ? 'Yes' : 'No'}\n"
-          "User Location: $userLocation\n\n"
-          "Items:\n$itemsSummary",
+    // Call the API
+    final response = await _updateItemsInBulk(
+      referenceId: referenceId,
+      itemsData: itemsData,
     );
+
+    if (response == null) {
+      // Exception
+      _showSnackbar("Failed to submit data (network error).");
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      // Show success snack bar
+      _showSnackbar("Successfully submitted data!");
+
+      // Show summary in dialog
+      final itemsSummary = selectedItems
+          .map((item) => '${item.name} (QR: ${item.id}, loc: $userLocation)')
+          .join('\n');
+
+      _showEnhancedDialog(
+        "Equipment Return",
+        "Condition: ${conditionController.text}\n"
+            "Notes/Issues: ${notesController.text}\n"
+            "Needs Maintenance: ${needsMaintenance ? 'Yes' : 'No'}\n"
+            "User Location: $userLocation\n\n"
+            "Items:\n$itemsSummary",
+      );
+    } else {
+      // Show failure snack bar
+      _showSnackbar("Failed to submit data. Status: ${response.statusCode}");
+    }
   }
 
-  // ----------------- NAVIGATE BACK TO MEDICAL DASHBOARD -----------------
+  // ----------------- NAVIGATE BACK TO DASHBOARD -----------------
   void _navigateToMedicalDashboard() {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
@@ -223,33 +330,24 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
     );
   }
 
-  bool _isCheckboxDisabled(Item_Details item, EquipmentAction action) {
-    final status = item.issuanceStatus.toLowerCase();
-    if (action == EquipmentAction.take) {
-      return status != 'available';  // can only take if it's 'available'
-    } else if (action == EquipmentAction.submit) {
-      return status == 'available';  // can only submit if it's not 'available'
-    }
-    return false;
-  }
-
   /// Shows an enhanced popup with two buttons:
-  /// "Continue" -> Just closes pop-up
-  /// "Complete" -> Redirect to MedicalDashboard
+  /// "Continue" -> Closes pop-up
+  /// "Complete" -> Redirects to MedicalDashboard
   void _showEnhancedDialog(String title, String content) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.white,
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: Text(content),
         actions: [
-          // "Continue" on bottom left
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("Continue"),
           ),
-          // "Complete" on bottom right
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -263,48 +361,78 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
   }
 
   // ----------------- PICK DATE UI HELPER -----------------
-  Future<void> _pickTakeDate({required bool pickFromDate}) async {
-    final currentDate = pickFromDate
-        ? (takeFromDate ?? DateTime.now())
-        : (takeToDate ?? DateTime.now().add(const Duration(days: 1)));
+  Future<void> _pickDate({required bool pickFromDate}) async {
+    final initial = pickFromDate
+        ? (fromDate ?? DateTime.now())
+        : (toDate ?? DateTime.now().add(const Duration(days: 1)));
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: currentDate,
+      initialDate: initial,
       firstDate: DateTime(2022),
       lastDate: DateTime(2050),
     );
     if (picked != null) {
       setState(() {
         if (pickFromDate) {
-          takeFromDate = picked;
-          // ensure toDate is at least one day after fromDate
-          if (takeToDate == null || takeFromDate!.isAfter(takeToDate!)) {
-            takeToDate = takeFromDate!.add(const Duration(days: 1));
+          fromDate = picked;
+          // ensure toDate is at least one day after fromDate if not set
+          if (toDate == null || fromDate!.isAfter(toDate!)) {
+            toDate = fromDate!.add(const Duration(days: 1));
           }
         } else {
-          takeToDate = picked;
-          // ensure fromDate is before toDate
-          if (takeFromDate == null || takeToDate!.isBefore(takeFromDate!)) {
-            takeFromDate = takeToDate!.subtract(const Duration(days: 1));
+          toDate = picked;
+          // ensure fromDate is before toDate if not set
+          if (fromDate == null || toDate!.isBefore(fromDate!)) {
+            fromDate = toDate!.subtract(const Duration(days: 1));
           }
         }
       });
     }
   }
 
+  // ----------------- FILTER ITEMS BASED ON ACTION -----------------
+  List<Item_Details> _getDisplayedItems() {
+    // If user hasn't chosen anything yet, show all
+    if (selectedAction == EquipmentAction.none) return allItems;
+
+    if (selectedAction == EquipmentAction.take) {
+      // show only items "Available"
+      return allItems
+          .where((item) => item.issuanceStatus.toLowerCase() == 'available')
+          .toList();
+    } else if (selectedAction == EquipmentAction.reserve) {
+      // show only items "Available"
+      return allItems
+          .where((item) => item.issuanceStatus.toLowerCase() == 'available')
+          .toList();
+    } else if (selectedAction == EquipmentAction.submit) {
+      // show only items "Issued" or "Reserved"
+      return allItems.where((item) {
+        final status = item.issuanceStatus.toLowerCase();
+        return (status == 'issued' || status == 'reserved');
+      }).toList();
+    }
+    return allItems;
+  }
+
   // ----------------- BUILD UI -----------------
   @override
   Widget build(BuildContext context) {
+    final displayedItems = _getDisplayedItems();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Equipment Display", style: TextStyle(color: Colors.white),),
+        title: const Text(
+          "Equipment Display",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF3B7AF5),
         elevation: 0,
       ),
       body: Stack(
         children: [
-          // 1) Background gradient
+          // 1) Background gradient (blue)
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -314,7 +442,7 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
               ),
             ),
           ),
-          // 1B) Pattern overlay
+          // 2) Light pattern overlay
           Opacity(
             opacity: 0.05,
             child: CustomPaint(
@@ -322,8 +450,7 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
               size: MediaQuery.of(context).size,
             ),
           ),
-
-          // 2) Scrollable content
+          // 3) Scrollable content
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -340,12 +467,73 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          _buildEquipmentSelection(),
+                          // -------------- LIST OF SCANNED ITEMS --------------
+                          _buildEquipmentSelection(displayedItems),
+
                           const SizedBox(height: 16),
-                          _buildActionSelection(),
+
+                          // -------------- HORIZONTAL SCROLL ROW OF BUTTONS --------------
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      selectedAction = EquipmentAction.take;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF3B7AF5),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text("Take Equipment"),
+                                ),
+                                const SizedBox(width: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      selectedAction = EquipmentAction.reserve;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF3B7AF5),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text("Reserve Equipment"),
+                                ),
+                                const SizedBox(width: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      selectedAction = EquipmentAction.submit;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF3B7AF5),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text("Submit Equipment"),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // -------------- FORMS FOR EACH ACTION --------------
                           const SizedBox(height: 16),
                           if (selectedAction == EquipmentAction.take)
                             _buildTakeEquipmentCard(),
+                          if (selectedAction == EquipmentAction.reserve)
+                            _buildReserveEquipmentCard(),
                           if (selectedAction == EquipmentAction.submit)
                             _buildSubmitEquipmentCard(),
                         ],
@@ -361,69 +549,61 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
     );
   }
 
-  // ----------------- ACTION CHIPS -----------------
-  Widget _buildActionSelection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        ChoiceChip(
-          label: const Text("Take Equipment"),
-          selected: selectedAction == EquipmentAction.take,
-          showCheckmark: false,
-          onSelected: (selected) {
-            setState(() {
-              selectedAction =
-              selected ? EquipmentAction.take : EquipmentAction.none;
-            });
-          },
+  // ----------------- SCANNED ITEMS LIST (CHECKBOXES) -----------------
+  Widget _buildEquipmentSelection(List<Item_Details> displayedItems) {
+    if (displayedItems.isEmpty) {
+      // If no items match the chosen status, show a text message
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child: Column(
+          children: const [
+            Text(
+              "Scanned Items:",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text("No items available for this status."),
+          ],
         ),
-        const SizedBox(width: 16),
-        ChoiceChip(
-          label: const Text("Submit Equipment"),
-          selected: selectedAction == EquipmentAction.submit,
-          showCheckmark: false,
-          onSelected: (selected) {
-            setState(() {
-              selectedAction =
-              selected ? EquipmentAction.submit : EquipmentAction.none;
-            });
-          },
-        ),
-      ],
-    );
-  }
+      );
+    }
 
-  // ----------------- LIST OF SCANNED ITEMS (with checkboxes in separate cards) -----------------
-  Widget _buildEquipmentSelection() {
-    final selectedCount = isSelected.where((b) => b).length;
+    // Otherwise show the normal list
+    final selectedCount = displayedItems.where((item) {
+      final idx = allItems.indexOf(item);
+      return isSelected[idx];
+    }).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           "Scanned Items:",
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
+            color: Colors.black,
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          "Selected: $selectedCount / ${allItems.length}",
+          "Selected: $selectedCount / ${displayedItems.length}",
           style: const TextStyle(fontSize: 14),
         ),
         const Divider(),
 
-        // We display each item in its own Card, with a checkbox
+        // Each item with checkbox
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: allItems.length,
+          itemCount: displayedItems.length,
           itemBuilder: (ctx, i) {
-            final item = allItems[i];
-            final disabled = _isCheckboxDisabled(item, selectedAction);
-
+            final item = displayedItems[i];
+            final idxInAll = allItems.indexOf(item);
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8),
               shape: RoundedRectangleBorder(
@@ -444,14 +624,11 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
                       'Description: ${item.description}',
                   style: TextStyle(color: Colors.grey[600]),
                 ),
-                // If it's disabled, we forcibly uncheck the item
-                value: isSelected[i] && !disabled,
-                onChanged: disabled
-                    ? null
-                    : (val) {
+                value: isSelected[idxInAll],
+                onChanged: (val) {
                   if (val != null) {
                     setState(() {
-                      isSelected[i] = val;
+                      isSelected[idxInAll] = val;
                     });
                   }
                 },
@@ -463,32 +640,27 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
     );
   }
 
+  // Reusable input decoration for text fields (blue background, black text)
+  InputDecoration _blueTextFieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.black),
+      fillColor: const Color(0xFF3B7AF5), // TextField background
+      filled: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+
   // ----------------- TAKE EQUIPMENT CARD -----------------
   Widget _buildTakeEquipmentCard() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Take Equipment",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-
-        // Switch => Issued or Reserved
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Issued"),
-            Switch(
-              value: !isRequest,
-              onChanged: (val) {
-                setState(() {
-                  isRequest = !val;
-                });
-              },
-            ),
-            const Text("Reserved"),
-          ],
+          "Take Equipment (Issued)",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
         ),
         const SizedBox(height: 16),
 
@@ -497,18 +669,19 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
           children: [
             Expanded(
               child: InkWell(
-                onTap: () => _pickTakeDate(pickFromDate: true),
+                onTap: () => _pickDate(pickFromDate: true),
                 child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   decoration: BoxDecoration(
+                    color: const Color(0xFF3B7AF5),
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    takeFromDate == null
+                    fromDate == null
                         ? "From Date"
-                        : _serverDateFormat.format(takeFromDate!),
+                        : _serverDateFormat.format(fromDate!),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 ),
               ),
@@ -516,18 +689,19 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
             const SizedBox(width: 8),
             Expanded(
               child: InkWell(
-                onTap: () => _pickTakeDate(pickFromDate: false),
+                onTap: () => _pickDate(pickFromDate: false),
                 child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   decoration: BoxDecoration(
+                    color: const Color(0xFF3B7AF5),
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    takeToDate == null
+                    toDate == null
                         ? "To Date"
-                        : _serverDateFormat.format(takeToDate!),
+                        : _serverDateFormat.format(toDate!),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 ),
               ),
@@ -539,10 +713,8 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
         // Purpose
         TextField(
           controller: purposeController,
-          decoration: const InputDecoration(
-            labelText: "Purpose",
-            border: OutlineInputBorder(),
-          ),
+          style: const TextStyle(color: Colors.black),
+          decoration: _blueTextFieldDecoration("Purpose"),
           maxLines: 2,
         ),
         const SizedBox(height: 16),
@@ -550,10 +722,8 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
         // User location
         TextField(
           controller: userLocationController,
-          decoration: const InputDecoration(
-            labelText: "User Location",
-            border: OutlineInputBorder(),
-          ),
+          style: const TextStyle(color: Colors.black),
+          decoration: _blueTextFieldDecoration("User Location"),
         ),
         const SizedBox(height: 24),
 
@@ -570,41 +740,131 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text("Update to Issued/Reserved"),
+            child: const Text("Update to Issued"),
           ),
         ),
       ],
     );
   }
 
-  // ----------------- SUBMIT EQUIPMENT CARD -----------------
+  // ----------------- RESERVE EQUIPMENT CARD -----------------
+  Widget _buildReserveEquipmentCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Reserve Equipment",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        const SizedBox(height: 16),
+
+        // Date pickers
+        Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: () => _pickDate(pickFromDate: true),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B7AF5),
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    fromDate == null
+                        ? "From Date"
+                        : _serverDateFormat.format(fromDate!),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: InkWell(
+                onTap: () => _pickDate(pickFromDate: false),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B7AF5),
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    toDate == null
+                        ? "To Date"
+                        : _serverDateFormat.format(toDate!),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Purpose
+        TextField(
+          controller: purposeController,
+          style: const TextStyle(color: Colors.black),
+          decoration: _blueTextFieldDecoration("Purpose"),
+          maxLines: 2,
+        ),
+        const SizedBox(height: 16),
+
+        // User location
+        TextField(
+          controller: userLocationController,
+          style: const TextStyle(color: Colors.black),
+          decoration: _blueTextFieldDecoration("User Location"),
+        ),
+        const SizedBox(height: 24),
+
+        // Submit button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _submitReserveEquipment,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B7AF5),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text("Update to Reserved"),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ----------------- SUBMIT EQUIPMENT CARD (RETURN) -----------------
   Widget _buildSubmitEquipmentCard() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Submit Equipment",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          "Submit Equipment (Return to Available)",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
         ),
         const SizedBox(height: 16),
 
         // Condition
         TextField(
           controller: conditionController,
-          decoration: const InputDecoration(
-            labelText: "Equipment Condition",
-            border: OutlineInputBorder(),
-          ),
+          style: const TextStyle(color: Colors.black),
+          decoration: _blueTextFieldDecoration("Equipment Condition"),
         ),
         const SizedBox(height: 16),
 
         // Notes
         TextField(
           controller: notesController,
-          decoration: const InputDecoration(
-            labelText: "Notes / Issues",
-            border: OutlineInputBorder(),
-          ),
+          style: const TextStyle(color: Colors.black),
+          decoration: _blueTextFieldDecoration("Notes / Issues"),
           maxLines: 2,
         ),
         const SizedBox(height: 16),
@@ -613,7 +873,7 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Needs Maintenance?"),
+            const Text("Needs Maintenance?", style: TextStyle(color: Colors.black)),
             Switch(
               value: needsMaintenance,
               onChanged: (val) {
@@ -629,10 +889,8 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
         // Location
         TextField(
           controller: userLocationController,
-          decoration: const InputDecoration(
-            labelText: "User Location",
-            border: OutlineInputBorder(),
-          ),
+          style: const TextStyle(color: Colors.black),
+          decoration: _blueTextFieldDecoration("User Location"),
         ),
         const SizedBox(height: 24),
 
@@ -657,7 +915,7 @@ class _EquipmentDisplayState extends State<EquipmentDisplay> {
   }
 }
 
-// ----------------- Grid Pattern Painter (like in Login) -----------------
+// ----------------- Grid Pattern Painter (light overlay) -----------------
 class GridPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

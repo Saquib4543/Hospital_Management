@@ -1124,7 +1124,7 @@ class _ItemListPageState extends State<ItemListPage> with SingleTickerProviderSt
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ItemDetailsPage(itemId: item.id)),
+                      MaterialPageRoute(builder: (context) => CategoryDetailsPage( categoryId: item.id,)),
                     ).then((_) => _refreshItems());
                   },
                   child: Column(

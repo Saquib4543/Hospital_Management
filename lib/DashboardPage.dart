@@ -19,11 +19,11 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   Map<String, dynamic> _dashboardData = {
-    "available_count": "0",
+    "available_count": 0,
     "issued_count": 0,
     "reserved_count": 0,
     "total_items": 0,
-    "total_quantity": "0",
+    "total_quantity": 0.0,
     "recent_updates": []
   };
 
@@ -43,20 +43,25 @@ class _DashboardPageState extends State<DashboardPage> {
     });
 
     try {
-      final response = await http
-          .get(
+      final response = await http.get(
         Uri.parse('https://uat.goclaims.in/inventory_hub/dashboard'),
         headers: {
           'Content-Type': 'application/json',
-          // Add any authentication headers if needed
         },
-      )
-          .timeout(Duration(seconds: 10));
+      ).timeout(Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
+
         setState(() {
-          _dashboardData = data;
+          _dashboardData = {
+            "available_count": data["available_count"] ?? 0,
+            "issued_count": data["issued_count"] ?? 0,
+            "reserved_count": data["reserved_count"] ?? 0,
+            "total_items": data["total_items"] ?? 0,
+            "total_quantity": (data["total_quantity"] ?? 0).toDouble(), // Ensure it's a double
+            "recent_updates": data["recent_updates"] ?? [],
+          };
           _isLoading = false;
         });
       } else {
@@ -372,12 +377,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildStatCards() {
-    final String availableCount = _dashboardData['available_count'] ?? "0";
-    final String issuedCount = (_dashboardData['issued_count'] ?? 0).toString();
-    final String reservedCount = (_dashboardData['reserved_count'] ?? 0).toString();
-    final String totalItems = (_dashboardData['total_items'] ?? 0).toString();
+    final String availableCount = _dashboardData['available_count'].toString();
+    final String issuedCount = _dashboardData['issued_count'].toString();
+    final String reservedCount = _dashboardData['reserved_count'].toString();
+    final String totalItems = _dashboardData['total_items'].toString();
 
-    // Calculate trend percentages (placeholders)
     final availableTrend = "+5.2%";
     final issuedTrend = "+3.1%";
     final reservedTrend = "-2.4%";
@@ -385,61 +389,23 @@ class _DashboardPageState extends State<DashboardPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 600) {
-          // For mobile: Stack cards vertically
           return Column(
             children: [
-              _buildStatCard(
-                "Available Items",
-                availableCount,
-                availableTrend,
-                Colors.blue[700]!,
-                Icons.inventory_2_outlined,
-              ),
+              _buildStatCard("Available Items", availableCount, availableTrend, Colors.blue[700]!, Icons.inventory_2_outlined),
               SizedBox(height: 16),
-              _buildStatCard(
-                "Issued Items",
-                issuedCount,
-                issuedTrend,
-                Colors.green[700]!,
-                Icons.local_shipping_outlined,
-              ),
+              _buildStatCard("Issued Items", issuedCount, issuedTrend, Colors.green[700]!, Icons.local_shipping_outlined),
               SizedBox(height: 16),
-              _buildStatCard(
-                "Reserved Items",
-                reservedCount,
-                reservedTrend,
-                Colors.orange[700]!,
-                Icons.pending_actions_outlined,
-              ),
+              _buildStatCard("Reserved Items", reservedCount, reservedTrend, Colors.orange[700]!, Icons.pending_actions_outlined),
             ],
           );
         } else {
-          // For tablets and desktops: Place cards in a row
           return Row(
             children: [
-              _buildStatCard(
-                "Available Items",
-                availableCount,
-                availableTrend,
-                Colors.blue[700]!,
-                Icons.inventory_2_outlined,
-              ),
+              _buildStatCard("Available Items", availableCount, availableTrend, Colors.blue[700]!, Icons.inventory_2_outlined),
               SizedBox(width: 16),
-              _buildStatCard(
-                "Issued Items",
-                issuedCount,
-                issuedTrend,
-                Colors.green[700]!,
-                Icons.local_shipping_outlined,
-              ),
+              _buildStatCard("Issued Items", issuedCount, issuedTrend, Colors.green[700]!, Icons.local_shipping_outlined),
               SizedBox(width: 16),
-              _buildStatCard(
-                "Reserved Items",
-                reservedCount,
-                reservedTrend,
-                Colors.orange[700]!,
-                Icons.pending_actions_outlined,
-              ),
+              _buildStatCard("Reserved Items", reservedCount, reservedTrend, Colors.orange[700]!, Icons.pending_actions_outlined),
             ].map((widget) => Expanded(child: widget)).toList(),
           );
         }

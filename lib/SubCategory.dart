@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -469,43 +469,34 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
     }
   }
 
-  Future<void> _downloadQRCode(String imageUrl) async {
+  Future<void> _downloadQRCode(String base64Image) async {
     try {
-      _showLoadingSnackBar("Downloading QR Code...");
+      // Convert Base64 string to bytes
+      Uint8List bytes = base64Decode(base64Image);
 
-      if (kIsWeb) {
-        // Web platform: Use URL launcher instead of dart:html
-        final Uri uri = Uri.parse(imageUrl);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          _showSuccessSnackBar("QR Code download started");
-        } else {
-          throw Exception('Could not launch $imageUrl');
-        }
-      } else {
-        // Mobile platforms
-        final directory = await getTemporaryDirectory();
-        final filename = 'qr_code_${DateTime.now().millisecondsSinceEpoch}.png';
-        final path = '${directory.path}/$filename';
+      // Get storage directory
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/QRCode.png';
 
-        // Download image
-        final response = await http.get(Uri.parse(imageUrl));
-        final file = File(path);
-        await file.writeAsBytes(response.bodyBytes);
+      // Save the image file
+      File file = File(filePath);
+      await file.writeAsBytes(bytes);
 
-        // Save to gallery
-        final result = await ImageGallerySaver.saveFile(path);
-        if (result['isSuccess'] == true || result != null) {
-          _showSuccessSnackBar("QR Code saved to gallery");
-        } else {
-          throw Exception("Failed to save image to gallery");
-        }
-      }
+      // Show a success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("QR Code saved to $filePath")),
+      );
+
+      // Optional: Allow user to share/download it
+      // await Share.shareFiles([filePath], text: "Here is your QR Code");
+
     } catch (e) {
-      _showErrorSnackBar("Failed to download QR Code: $e");
+      debugPrint("Error saving QR code: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to download QR Code")),
+      );
     }
   }
-
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -551,6 +542,11 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
     );
   }
 
+  Uint8List _base64ToImage(String base64String) {
+    return base64Decode(base64String);
+  }
+
+
   void _showLoadingSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -573,6 +569,19 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
       ),
     );
   }
+
+  // Helper method to get the base64 string regardless of type
+  String _getQrImageString(dynamic qrImage) {
+    if (qrImage is List) {
+      return qrImage.isNotEmpty ? qrImage[0] : "";
+    } else if (qrImage is String) {
+      return qrImage;
+    }
+    return "";
+  }
+
+// For the Image.memory widget:
+
 
   void _viewFullDetails(CategoryDetail detail) {
     showModalBottomSheet(
@@ -760,27 +769,11 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  _getModifiedQrUrl(detail.qrImage[0]),  // ✅ Using modified URL
+                                child: Image.memory(
+                                  _base64ToImage(_getQrImageString(detail.qrImage)),
                                   height: 220,
                                   width: 220,
                                   fit: BoxFit.contain,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      height: 220,
-                                      width: 220,
-                                      alignment: Alignment.center,
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                            : null,
-                                        strokeWidth: 2,
-                                        color: Theme.of(context).primaryColor,
-                                      ),
-                                    );
-                                  },
                                   errorBuilder: (context, error, stackTrace) {
                                     return Container(
                                       height: 220,
@@ -877,7 +870,7 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
     );
   }
 
-  void _viewQRCode(String imageUrl) {
+  void _viewQRCode(String base64Image) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -925,10 +918,6 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: Icon(Icons.close, color: Colors.white),
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.2)),
-                        shape: MaterialStateProperty.all(CircleBorder()),
-                      ),
                     ),
                   ],
                 ),
@@ -937,30 +926,22 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
                 padding: EdgeInsets.all(28),
                 child: Column(
                   children: [
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Image.network(
-                        imageUrl,
-                        height: 250,
-                        width: 250,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(
+                        _base64ToImage(_getQrImageString(base64Image)),
+                        height: 220,
+                        width: 220,
                         fit: BoxFit.contain,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
+                        errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            height: 250,
-                            width: 250,
-                            alignment: Alignment.center,
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 2,
-                              color: Theme.of(context).primaryColor,
+                            height: 220,
+                            width: 220,
+                            color: Colors.grey.shade200,
+                            child: Icon(
+                              Icons.broken_image,
+                              color: Colors.grey.shade400,
+                              size: 40,
                             ),
                           );
                         },
@@ -991,7 +972,7 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              _downloadQRCode(imageUrl);
+                              _downloadQRCode(base64Image);
                               Navigator.pop(context);
                             },
                             icon: Icon(Icons.download),
@@ -1466,7 +1447,7 @@ class _CategoryDetailsPageState extends State<CategoryDetailsPage> {
                 detail.qrImage.isNotEmpty
                     ? IconButton(
                   icon: Icon(Icons.qr_code_2),
-                  onPressed: () => _viewQRCode(detail.qrImage[0]),
+                  onPressed: () => _viewQRCode(_getQrImageString(detail.qrImage)), // ✅ Pass single QR string
                   color: Theme.of(context).primaryColor,
                   tooltip: "View QR Code",
                 )

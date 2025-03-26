@@ -188,9 +188,9 @@ class _CameraInControllerState extends State<CameraInController>
         final itemDetails = Item_Details.fromJson(jsonBody);
 
         // If itemDetails.id is still empty, override with scanned code
-        if (itemDetails.id.isEmpty) {
-          itemDetails.id = scannedCode;
-        }
+        // if (itemDetails.id.isEmpty) {
+        //   itemDetails.id = scannedCode;
+        // }
 
         setState(() {
           scannedItemsDetails[scannedCode] = itemDetails;
